@@ -28,23 +28,30 @@ import matplotlib.pyplot as plt
 def parseFiles(annotationsPath):
   objectList = []
   # Retrieves all the files in a directory and checks if they are xml
-  fileList = os.listdir(annotationsPath)
-  for file in fileList:
-    fileTypeMatch = re.search('.xml',file)
-    if fileTypeMatch:
-      try:
-          f = open(file)
-          soup = bsoup(f)
-          f.close()
-          # Finds the object of all xml files and places the objects into a list
-          # and returns it.
-          parsedXML = (soup.findAll('name'))
-          for object in parsedXML:
-            match = re.search('(<name>)(\w+)(</name>)', str(object))
-            objectList += match.group(2),
-    
-      except IOError:
-        sys.stderr.write('There was a problem with file: ' + file + '/n')
+  annotationsFullPath = os.path.abspath(annotationsPath)
+  fileList = os.listdir(annotationsFullPath)
+  
+  if len(fileList) > 0:
+    for file in fileList:
+        fileTypeMatch = re.search('.xml',file)
+        if fileTypeMatch:
+            try:
+                f = open(file)
+                soup = bsoup(f)
+                f.close()
+                # Finds the object of all xml files and places the objects into a list
+                # and returns it.
+                parsedXML = (soup.findAll('name'))
+                for object in parsedXML:
+                    match = re.search('(<name>)(\w+)(</name>)', str(object))
+                    objectList += match.group(2),
+            except IOError:
+                errorMessage = "There was a problem with file: " + file
+                print
+                sys.stderr.write(errorMessage)
+  else:
+    sys.stderr.write("Error - No xml files found.")
+    sys.exit(1)
   return objectList
 
 """

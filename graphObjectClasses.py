@@ -121,11 +121,11 @@ def createGraph(countedList,outputPath):
     ax.set_xticks(IND + (WIDTH/2))
     ax.set_xticklabels( (r'Cars - ' + str(countedList[0]), r'Persons - ' + str(countedList[1]), r'Bicycles - ' + str(countedList[2])),fontweight='bold' )
     ax.set_ylim(0,MAXNUM*2)
-    
+
     # Creates the legend.
     createLegend(ax,colors,countedList)
 
-    # Asks the user if he or she wants to save the file
+#    # Asks the user if he or she wants to save the file
     userInput = ''
     while userInput is not 'y' or 'n':
       userInput = raw_input("Would you like to save the figure? (y/n) ")
@@ -140,7 +140,7 @@ def createGraph(countedList,outputPath):
         break
       else:
         print "Please answer y or n. " '\n'
-    
+
     plt.show()
 
 """

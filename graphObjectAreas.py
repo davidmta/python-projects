@@ -148,16 +148,13 @@ def main():
     noOcclusion=0
     noTruncated=0
     
-    args = sys.argv[1:]
-    if not args:
-      sys.stderr.write("Error - usage: [annotationsPath][outputPath]")
-      sys.exit(1)
-    else:
-      annotationsPath = args[0]
-      outputPath = args[1]
-  
+    args = sys.args[1:]
+    
+    annotationsPath = raw_input("Path to the annotations?: ")
+    outputPath = raw_input("Output Path?: ")
+
       # Checks args for optional parameter,objectClass, noTruncatedMatch, noOcclusionMatch
-      for arg in args:
+    for arg in args:
         objectMatch = re.search('(objectType)(=)(\w+)',arg)
         noTruncatedMatch = re.search('(noTruncated=)(True)',arg)
         noOcclusionMatch = re.search('(noOcclusion=)(True)',arg)
@@ -169,7 +166,7 @@ def main():
           noTruncated = noTruncatedMatch.group(2)
 
       # Determines what type of graph to create based on the optional parameters declared.
-      if os.path.exists(annotationsPath) and os.path.exists(outputPath):
+    if os.path.exists(annotationsPath) and os.path.exists(outputPath):
         if objectType in ('car', 'person', 'bicycle') and noOcclusion and noTruncated:
           graphObjectAreas(annotationsPath,outputPath,objectClass=objectType,noOcclusion=True,noTruncated=True)
         if objectType in ('car', 'person', 'bicycle') and noOcclusion and not noTruncated:
@@ -189,11 +186,11 @@ def main():
           graphObjectAreas(annotationsPath,outputPath,objectClass=objectType)
 
       # Error mssages for broken paths.
-      elif not os.path.exists(annotationsPath):
+    elif not os.path.exists(annotationsPath):
         sys.stderr.write("Error - path does not exist" + '\n')
         sys.stderr.write("annotationsPath = " + annotationsPath + '\n')
         sys.exit(1)
-      elif not os.path.exists(outputPath):
+    elif not os.path.exists(outputPath):
         sys.stderr.write("Error - path does not exist:" + '\n')
         sys.stderr.write("outputPath = " + outputPath + '\n')
         sys.exit(1)

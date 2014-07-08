@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#!/usr/bin/python
 import os
 import sys
 import re
@@ -111,20 +112,16 @@ def graphObjectTags(annotationsPath,outputPath,objectType='all'):
 
 def main():
     args = sys.argv[1:]
-    if not args:
-        sys.stderr.write("Error - usage: [annotationsPath][objectType][outputPath]")
-        sys.exit(1)
+    annotationsPath = raw_input("Path to the annotations?: ")
+    outputPath = raw_input("Output Path?: ")
+    for arg in args:
+        objectMatch = re.search('(objectType)(=)(\w+)',arg)
+    if objectMatch:
+        objectType = objectMatch.group(3).lower()
+        if objectType in ('car','person','bicycle'):
+            graphObjectTags(annotationsPath,outputPath,objectType=objectType)
     else:
-        annotationsPath = args[0]
-        outputPath = args[1]
-        for arg in args:
-            objectMatch = re.search('(objectType)(=)(\w+)',arg)
-        if objectMatch:
-            objectType = objectMatch.group(3).lower()
-            if objectType in ('car','person','bicycle'):
-                graphObjectTags(annotationsPath,outputPath,objectType=objectType)
-        else:
-            graphObjectTags(annotationsPath,outputPath)
+        graphObjectTags(annotationsPath,outputPath)
 
 if __name__ == '__main__':
     main()

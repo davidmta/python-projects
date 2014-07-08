@@ -117,7 +117,6 @@ def createGraph(countedList,outputPath):
     # Creates the legend.
     createLegend(ax,colors,countedList)
 
-    
     # Asks the user if he or she wants to save the file
     userInput = ''
     while userInput is not 'y' or 'n':
@@ -154,21 +153,16 @@ def graphObjectClasses(annotationsPath, outputPath):
 """
 
 def main():
-    args = sys.argv[1:]
-    if not args:
-      sys.stderr.write("Error - usage: [annotationsPath][outputPath]" + '\n')
-      sys.exit(1)
-    else:
-      annotationsPath = args[0]
-      outputPath = args[1]
-      if os.path.exists(annotationsPath) and os.path.exists(outputPath):
+    annotationsPath = raw_input("Path to the annotations?: ")
+    outputPath = raw_input("Output Path?: ")
+    if os.path.exists(annotationsPath) and os.path.exists(outputPath):
         graphObjectClasses(annotationsPath,outputPath)
       # Error messages for broken paths.
-      elif not os.path.exists(annotationsPath):
+    elif not os.path.exists(annotationsPath):
         sys.stderr.write("Error - path does not exist" + '\n')
         sys.stderr.write("annotationsPath = " + annotationsPath + '\n')
         sys.exit(1)
-      elif not os.path.exists(outputPath):
+    elif not os.path.exists(outputPath):
         sys.stderr.write("Error - path does not exist:" + '\n')
         sys.stderr.write("outputPath = " + outputPath + '\n')
         sys.exit(1)

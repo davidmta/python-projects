@@ -36,6 +36,7 @@ def parseFiles(annotationsPath):
         fileTypeMatch = re.search('.xml',file)
         if fileTypeMatch:
             try:
+                filePath = os.path.join(annotationsFullPath, file)
                 f = open(file)
                 soup = bsoup(f)
                 f.close()

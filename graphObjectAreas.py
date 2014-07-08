@@ -76,12 +76,15 @@ def collectObjectArea(annotationsPath,objectClass,noTruncated,noOcclusion):
     areaList = []
     truncationArea = []
     occlusionArea = []
-        # Retrieves all the files in a directory and checks if they are xml
-    fileList = os.listdir(annotationsPath)
+    # Retrieves all the files in a directory and checks if they are xml
+    annotationsFullPath = os.path.abspath(annotationsPath)
+    fileList = os.listdir(annotationsFullPath)
+    
     for file in fileList:
         fileTypeMatch = re.search('.xml',file)
         if fileTypeMatch:
             try:
+                filePath = os.path.join(annotationsFullPath, file)
                 f = open(file)
                 soup = bsoup(f)
                 f.close()

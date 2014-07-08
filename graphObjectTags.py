@@ -36,11 +36,14 @@ def addToTagList(soup):
 def parseFiles(annotationsPath,objectType):
     tagList = []
     # Retrieves all the files in a directory and checks if they are xml
-    fileList = os.listdir(annotationsPath)
+    annotationsFullPath = os.path.abspath(annotationsPath)
+    fileList = os.listdir(annotationsFullPath)
+    
     for file in fileList:
         fileTypeMatch = re.search('.xml',file)
         if fileTypeMatch:
             try:
+                filePath = os.path.join(annotationsFullPath, file)
                 f = open(file)
                 soup = bsoup(f)
                 f.close()

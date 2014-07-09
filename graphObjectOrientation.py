@@ -75,7 +75,7 @@ def organizeObjectList(objectList):
     return countedObjects
 
 def createGraph(countedList,outputPath):
-    print "not done."
+    print countedList
 
 """
     Creates a graph of object classes by reading files from the
@@ -85,6 +85,7 @@ def createGraph(countedList,outputPath):
 def graphObjectOrientation(annotationsPath, outputPath):
     objectList = parseFiles(annotationsPath)
     countedList = organizeObjectList(objectList)
+    print "Nutmeg"
     createGraph(countedList,outputPath)
 
 """

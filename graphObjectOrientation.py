@@ -87,23 +87,32 @@ def parseFiles(annotationsPath):
     """
 
 def createGraph(objectOrientationDict,outputPath):
+    
     N = 5
-    menMeans   = (20, 35, 30, 35, 27)
-    womenMeans = (1, 32, 34, 20, 25)
-
+    carOrientation   = objectOrientationDict['car']
+    personOrientation = objectOrientationDict['person']
+    bicycleOrientation = objectOrientationDict['bicycle']
+    
+    bicycleBarHeight = [0,0,0,0,0]
+    for x in range (0,5):
+        height = (carOrientation[x] + personOrientation[x])
+        bicycleBarHeight[x] = height
+    
     ind = np.arange(N)    # the x locations for the groups
     width = 0.50       # the width of the bars: can also be len(x) sequence
     
-    p1 = plt.bar(ind, menMeans,   width, color='r')
-    p2 = plt.bar(ind, womenMeans, width, color='y', bottom=menMeans)
+    p1 = plt.bar(ind, carOrientation, width, color='r')
+    p2 = plt.bar(ind, personOrientation, width, color='#FFD700',bottom=carOrientation)
+    p3 = plt.bar(ind, bicycleOrientation, width, color='g',bottom=bicycleBarHeight)
     
     plt.ylabel('Scores')
-    plt.title('Scores by group and gender')
-    plt.xticks(ind+width/2., ('Cars', 'Persons', 'Bicycles') )
-    plt.yticks(np.arange(0,81,10))
+    plt.title('')
+    plt.xticks(ind+width/2., ('1', '2', '3','4','5') )
+    #    plt.yticks(np.arange(0,81,10))
     plt.legend( (p1[0], p2[0]), ('Men', 'Women') )
-
+    
     plt.show()
+
 
 
 """

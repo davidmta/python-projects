@@ -8,32 +8,16 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-#N = 5
-#menMeans   = (20, 35, 30, 35, 27)
-#womenMeans = (25, 32, 34, 20, 25)
-#menStd     = (2, 3, 4, 1, 2)
-#womenStd   = (3, 5, 2, 3, 3)
-#ind = np.arange(N)    # the x locations for the groups
-#width = 0.35       # the width of the bars: can also be len(x) sequence
-#
-#p1 = plt.bar(ind, menMeans,   width, color='r')
-#p2 = plt.bar(ind, womenMeans, width, color='y',
-#             bottom=menMeans)
-#
-#plt.ylabel('Scores')
-#plt.title('Scores by group and gender')
-#plt.xticks(ind+width/2., ('G1', 'G2', 'G3', 'G4', 'G5') )
-#plt.yticks(np.arange(0,81,10))
-#plt.legend( (p1[0], p2[0]), ('Men', 'Women') )
-#
-#plt.show()
-
 """
     Parses through all the xml files to return a list of objects within the file.
+    Returns a dict of lists which contains the number of orientations an object has. [Left, Right, Frontal, Rear, Unspecified]
     """
 
 def parseFiles(annotationsPath):
-    objectList = []
+    orientationDict = {'car':[0,0,0,0,0],'person':[0,0,0,0,0],'bicycle':[0,0,0,0,0]}
+    # Creates two lists and an object in one list corresponds to the orientation in the other list based on position.
+    parsedObjectXMLList = []
+    parsedOrientationXMLList = []
     # Retrieves all the files in a directory and checks if they are xml
     fileList = os.listdir(annotationsPath)
     annotationsFullPath = os.path.abspath(annotationsPath)
@@ -47,14 +31,54 @@ def parseFiles(annotationsPath):
                 f.close()
                 # Finds the object of all xml files and places the objects into a list
                 # and returns it.
-                parsedXML = (soup.findAll('name'))
-                for object in parsedXML:
+                parsedObjectXML = (soup.findAll('name'))
+                parsedOrientationXML = soup.pose.string
+                
+                for object in parsedObjectXML:
                     match = re.search('(<name>)(\w+)(</name>)', str(object))
-                    objectList += match.group(2),
-            
+                    object = match.group(2)
+                    parsedObjectXMLList += object,
+                    parsedOrientationXMLList += str(parsedOrientationXML),
+        
             except IOError:
                 sys.stderr.write('There was a problem with file: ' + file + '/n')
-    return objectList
+
+    for x in range (0,len(parsedObjectXMLList)):
+        if parsedObjectXMLList[x] == 'car':
+            if parsedOrientationXMLList[x] == 'Left':
+                (orientationDict['car'])[0]+=1
+            elif parsedOrientationXMLList[x] == 'Right':
+                (orientationDict['car'])[1]+=1
+            elif parsedOrientationXMLList[x] == 'Frontal':
+                (orientationDict['car'])[2]+=1
+            elif parsedOrientationXMLList[x] == 'Rear':
+                (orientationDict['car'])[3]+=1
+            elif parsedOrientationXMLList[x] == 'Unspecified':
+                (orientationDict['car'])[4]+=1
+        elif parsedObjectXMLList[x] == 'person':
+            if parsedOrientationXMLList[x] == 'Left':
+                (orientationDict['person'])[0]+=1
+            elif parsedOrientationXMLList[x] == 'Right':
+                (orientationDict['person'])[1]+=1
+            elif parsedOrientationXMLList[x] == 'Frontal':
+                (orientationDict['person'])[2]+=1
+            elif parsedOrientationXMLList[x] == 'Rear':
+                (orientationDict['person'])[3]+=1
+            elif parsedOrientationXMLList[x] == 'Unspecified':
+                (orientationDict['person'])[4]+=1
+        elif parsedObjectXMLList[x] == 'bicycle':
+            if parsedOrientationXMLList[x] == 'Left':
+                (orientationDict['bicycle'])[0]+=1
+            elif parsedOrientationXMLList[x] == 'Right':
+                (orientationDict['bicycle'])[1]+=1
+            elif parsedOrientationXMLList[x] == 'Frontal':
+                (orientationDict['bicycle'])[2]+=1
+            elif parsedOrientationXMLList[x] == 'Rear':
+                (orientationDict['bicycle'])[3]+=1
+            elif parsedOrientationXMLList[x] == 'Unspecified':
+                (orientationDict['bicycle'])[4]+=1
+    print orientationDict
+    return orientationDict
 
 """
     Counts the number of objects and returns a list.
@@ -62,20 +86,25 @@ def parseFiles(annotationsPath):
     [Number of Cars, Number of Persons, Number of Bicycles]
     """
 
-def organizeObjectList(objectList):
-    
-    countedObjects = [0,0,0]
-    for objectType in objectList:
-        if objectType == 'car':
-            countedObjects[0] += 1
-        if objectType == 'person':
-            countedObjects[1] += 1
-        if objectType == 'bicycle':
-            countedObjects[2] += 1
-    return countedObjects
+def createGraph(objectOrientationDict,outputPath):
+    N = 5
+    menMeans   = (20, 35, 30, 35, 27)
+    womenMeans = (1, 32, 34, 20, 25)
 
-def createGraph(countedList,outputPath):
-    print countedList
+    ind = np.arange(N)    # the x locations for the groups
+    width = 0.50       # the width of the bars: can also be len(x) sequence
+    
+    p1 = plt.bar(ind, menMeans,   width, color='r')
+    p2 = plt.bar(ind, womenMeans, width, color='y', bottom=menMeans)
+    
+    plt.ylabel('Scores')
+    plt.title('Scores by group and gender')
+    plt.xticks(ind+width/2., ('Cars', 'Persons', 'Bicycles') )
+    plt.yticks(np.arange(0,81,10))
+    plt.legend( (p1[0], p2[0]), ('Men', 'Women') )
+
+    plt.show()
+
 
 """
     Creates a graph of object classes by reading files from the
@@ -83,10 +112,9 @@ def createGraph(countedList,outputPath):
     """
 
 def graphObjectOrientation(annotationsPath, outputPath):
-    objectList = parseFiles(annotationsPath)
-    countedList = organizeObjectList(objectList)
-    print "Nutmeg"
-    createGraph(countedList,outputPath)
+    objectOrientationDict = parseFiles(annotationsPath)
+
+#    createGraph(objectOrientationDict,outputPath)
 
 """
     Given the path, it opens the all the xml files.

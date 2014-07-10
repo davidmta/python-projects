@@ -51,12 +51,10 @@ def parseFiles(annotationsPath,objectType):
                         parsedOrientationXMLList += str(parsedOrientationXML),
             except IOError:
                 sys.stderr.write('There was a problem with file: ' + file + '/n')
-    print parsedObjectXMLList, parsedOrientationXMLList
-    print len(parsedObjectXMLList)
-    print len(parsedOrientationXMLList)
-    return
+
 
     for x in range (0,len(parsedObjectXMLList)):
+        
         if parsedObjectXMLList[x] == 'car':
             if parsedOrientationXMLList[x] == 'Left':
                 (orientationDict['car'])[0]+=1
@@ -68,6 +66,7 @@ def parseFiles(annotationsPath,objectType):
                 (orientationDict['car'])[3]+=1
             elif parsedOrientationXMLList[x] == 'Unspecified':
                 (orientationDict['car'])[4]+=1
+    
         elif parsedObjectXMLList[x] == 'person':
             if parsedOrientationXMLList[x] == 'Left':
                 (orientationDict['person'])[0]+=1
@@ -79,6 +78,7 @@ def parseFiles(annotationsPath,objectType):
                 (orientationDict['person'])[3]+=1
             elif parsedOrientationXMLList[x] == 'Unspecified':
                 (orientationDict['person'])[4]+=1
+
         elif parsedObjectXMLList[x] == 'bicycle':
             if parsedOrientationXMLList[x] == 'Left':
                 (orientationDict['bicycle'])[0]+=1
@@ -90,6 +90,7 @@ def parseFiles(annotationsPath,objectType):
                 (orientationDict['bicycle'])[3]+=1
             elif parsedOrientationXMLList[x] == 'Unspecified':
                 (orientationDict['bicycle'])[4]+=1
+
     return orientationDict
 
 """
@@ -98,10 +99,10 @@ def parseFiles(annotationsPath,objectType):
     [Number of Cars, Number of Persons, Number of Bicycles]
     """
 
-def createGraph(objectOrientationDict,outputPath):
+def createAllGraph(objectOrientationDict,outputPath):
     
     N = 5
-    carOrientation   = objectOrientationDict['car']
+    carOrientation = objectOrientationDict['car']
     personOrientation = objectOrientationDict['person']
     bicycleOrientation = objectOrientationDict['bicycle']
     
@@ -143,6 +144,31 @@ def createGraph(objectOrientationDict,outputPath):
     
     plt.show()
 
+def createSingleObjectPieChart(objectOrientationDict,outputPath,objectType):
+    userInput=''
+    orientationList = objectOrientationDict[objectType]
+    labels = 'Left - ' + str(orientationList[0]), 'Right - ' + str(orientationList[1]), 'Frontal - ' + str(orientationList[2]), 'Rear - ' + str(orientationList[3]), 'Unspecified - ' + str(orientationList[4])
+    sizes = objectOrientationDict[objectType]
+    colors = ['yellowgreen', 'gold', 'lightskyblue', 'orange','red']
+    plt.title('The Distribution of ' + objectType + ' Object by Orientation.',fontsize=16, fontweight='bold')
+    plt.pie(sizes, labels=labels, colors=colors,
+            autopct='%1.1f%%', shadow=True, startangle=0)
+    # Set aspect ratio to be equal so that pie is drawn as a circle.
+    plt.axis('equal')
+    while userInput is not 'y' or 'n':
+        userInput = raw_input("Would you like to save the figure? (y/n) ")
+        userInput = userInput.lower()
+        if userInput == 'y':
+            path = os.path.abspath(outputPath)
+            filename = 'graphObjectOrientation_Piechart.png'
+            fullpath = os.path.join(path, filename)
+            plt.savefig(fullpath)
+            break
+        elif userInput == 'n':
+            break
+        else:
+            print "Please answer y or n. " '\n'
+    plt.show()
 
 """
     Creates a graph of object classes by reading files from the
@@ -151,7 +177,10 @@ def createGraph(objectOrientationDict,outputPath):
 
 def graphObjectOrientation(annotationsPath, outputPath,objectType):
     objectOrientationDict = parseFiles(annotationsPath,objectType)
-    createGraph(objectOrientationDict,outputPath)
+    if objectType == 'all':
+        createAllGraph(objectOrientationDict,outputPath)
+    else:
+        createSingleObjectPieChart(objectOrientationDict,outputPath,objectType)
 
 """
     Given the path, it opens the all the xml files.
@@ -163,11 +192,9 @@ def graphObjectOrientation(annotationsPath, outputPath,objectType):
 def main():
     annotationsPath = raw_input("Path to the annotations?: ")
     outputPath = raw_input("Output Path?: ")
-    objectType = raw_input("What type of object would you like? (car/person/bicycle/all)")
-    
+    objectType = raw_input("What type of object would you like? (car/person/bicycle/all): ")
     if os.path.exists(annotationsPath) and os.path.exists(outputPath):
-        graphObjectOrientation(annotationsPath,outputPath,objectType)
-    
+        graphObjectOrientation(annotationsPath,outputPath,objectTyp
     # Error messages for broken paths.
     elif not os.path.exists(annotationsPath):
         sys.stderr.write("Error - path does not exist" + '\n')

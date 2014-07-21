@@ -112,10 +112,10 @@ def graphObjectTags(annotationsPath,outputPath,objectType='all'):
 def main():
     annotationsPath = raw_input("Path to the annotations?: ")
     outputPath = raw_input("Output Path?: ")
-    objecttype = raw_input("Which object tags would you like? (all/car/person/bicycle): ")
+    objectType = raw_input("Which object tags would you like? (all/car/person/bicycle): ")
     if objectType in ('car','person','bicycle'):
-        graphObjectTags(annotationsPath,outputPath,objectType=objectType)
-    else if objectType is 'all':
+        graphObjectTags(annotationsPath,outputPath,objectType)
+    elif objectType is 'all':
         graphObjectTags(annotationsPath,outputPath)
 
 if __name__ == '__main__':

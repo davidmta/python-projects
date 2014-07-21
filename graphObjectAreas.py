@@ -31,7 +31,7 @@ def createGraph(areaList,outputPath,objectClass,noTruncated,noOcclusion):
     fig, ax = plt.subplots()
     plt.hist(areaList,range = (0,MAX_AREA), bins = binList)
     
-    plt.title(r'The Distribution of '+ objectClass + ' Object by Area of the Bounding Box', fontsize=16, fontweight='bold')
+    plt.title(r'The Distribution of ' + str(len(areaList)) + ' ' + objectClass[0].upper() + objectClass[1:] + ' Object by Area of the Bounding Box', fontsize=16, fontweight='bold')
     plt.xlabel('Area of a Bounding Box',fontweight='bold')
     plt.ylabel('Amount In Each Bin',fontweight='bold')
     ax.set_xticks(binList,minor=1)
@@ -41,7 +41,6 @@ def createGraph(areaList,outputPath,objectClass,noTruncated,noOcclusion):
     ax.bar([0], [0], width=0.4, label = 'noOcclusion = ' + str(noOcclusion), align='center')
     ax.legend(loc='upper right',title = 'Optional Parameters',fancybox = True,shadow = True,frameon = True)
 
-    
     # Prompts the user whether he or she wants to save the figure.
     userInput = ''
     while userInput is not 'y' or 'n':
@@ -79,41 +78,43 @@ def collectObjectArea(annotationsPath,objectClass,noTruncated,noOcclusion):
     # Retrieves all the files in a directory and checks if they are xml
     annotationsFullPath = os.path.abspath(annotationsPath)
     fileList = os.listdir(annotationsFullPath)
-    
     for file in fileList:
         fileTypeMatch = re.search('.xml',file)
         if fileTypeMatch:
             try:
                 filePath = os.path.join(annotationsFullPath, file)
-                f = open(file)
+                f = open(filePath)
                 soup = bsoup(f)
                 f.close()
                 parsedXML = (soup.findAll('name'))
+                
                 # Finds the object of all xml files and checks if it is a part of objectClass.
                 if objectClass == 'all':
-                    for object in parsedXML:
-                        truncatedMatch = int(soup.truncated.string)
-                        occlusionMatch = int(soup.occluded.string)
-                        if not truncatedMatch and not occlusionMatch:
-                            calculateArea(soup,areaList)
-                        if truncatedMatch and not occlusionMatch:
-                            calculateArea(soup,truncationArea)
-                        if occlusionMatch and not truncatedMatch:
-                            calculateArea(soup,occlusionArea)
-                else:
-                    for object in parsedXML:
-                        match = re.search('(<name>)(\w+)(</name>)', str(object))
-                        truncatedMatch = int(soup.truncated.string)
-                        occlusionMatch = int(soup.occluded.string)
-                        # For all objects of the type that the user specifies, area is
-                        # calculated and added to a list.
-                        if match.group(2) == objectClass:
+                    for photo in parsedXML:
+                        for object in photo:
+                            truncatedMatch = int(soup.truncated.string)
+                            occlusionMatch = int(soup.occluded.string)
                             if not truncatedMatch and not occlusionMatch:
                                 calculateArea(soup,areaList)
                             if truncatedMatch and not occlusionMatch:
                                 calculateArea(soup,truncationArea)
                             if occlusionMatch and not truncatedMatch:
-                                calculateArea(soup,occlusionArea)
+                                    calculateArea(soup,occlusionArea)
+                else:
+                    for photo in parsedXML:
+                        for object in photo:
+                            match = re.search('(<name>)(\w+)(</name>)', str(object))
+                            truncatedMatch = int(soup.truncated.string)
+                            occlusionMatch = int(soup.occluded.string)
+                            # For all objects of the type that the user specifies, area is
+                            # calculated and added to a list.
+                            if match.group(2) == objectClass:
+                                if not truncatedMatch and not occlusionMatch:
+                                    calculateArea(soup,areaList)
+                                if truncatedMatch and not occlusionMatch:
+                                    calculateArea(soup,truncationArea)
+                                if occlusionMatch and not truncatedMatch:
+                                    calculateArea(soup,occlusionArea)
             except IOError:
                 sys.stderr.write('There was a problem with file: ' + file +'\n')
     if noTruncated:
@@ -155,14 +156,11 @@ def main():
     
     annotationsPath = raw_input("Path to the annotations?: ")
     outputPath = raw_input("Output Path?: ")
-
+    objectType = raw_input("What type of Object?: (all/car/person/bicycle) ")
       # Checks args for optional parameter,objectClass, noTruncatedMatch, noOcclusionMatch
     for arg in args:
-        objectMatch = re.search('(objectType)(=)(\w+)',arg)
         noTruncatedMatch = re.search('(noTruncated=)(True)',arg)
         noOcclusionMatch = re.search('(noOcclusion=)(True)',arg)
-        if objectMatch:
-          objectType = objectMatch.group(3).lower()
         if noOcclusionMatch:
           noOcclusion = noOcclusionMatch.group(2)
         if noTruncatedMatch:
@@ -187,16 +185,6 @@ def main():
           graphObjectAreas(annotationsPath,outputPath,objectClass=objectType,noTruncated=True)
         if objectType == 'all' and not noOcclusion and not noTruncated:
           graphObjectAreas(annotationsPath,outputPath,objectClass=objectType)
-
-      # Error mssages for broken paths.
-    elif not os.path.exists(annotationsPath):
-        sys.stderr.write("Error - path does not exist" + '\n')
-        sys.stderr.write("annotationsPath = " + annotationsPath + '\n')
-        sys.exit(1)
-    elif not os.path.exists(outputPath):
-        sys.stderr.write("Error - path does not exist:" + '\n')
-        sys.stderr.write("outputPath = " + outputPath + '\n')
-        sys.exit(1)
 
 if __name__ == '__main__':
     main()

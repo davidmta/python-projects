@@ -1,3 +1,0 @@
-Cars=1473
-Persons=3759
-Bicycles=437

@@ -71,7 +71,6 @@ def calculateArea(soup,list):
 """
 
 def collectObjectArea(annotationsPath,objectClass,noTruncated,noOcclusion):
-    
     areaList = []
     truncationArea = []
     occlusionArea = []
@@ -99,28 +98,33 @@ def collectObjectArea(annotationsPath,objectClass,noTruncated,noOcclusion):
                             if truncatedMatch and not occlusionMatch:
                                 calculateArea(soup,truncationArea)
                             if occlusionMatch and not truncatedMatch:
-                                    calculateArea(soup,occlusionArea)
+                                calculateArea(soup,occlusionArea)
+                            if occlusionMatch and truncatedMatch:
+                                calculateArea(soup,occlusionArea)
                 else:
                     for photo in parsedXML:
                         for object in photo:
-                            match = re.search('(<name>)(\w+)(</name>)', str(object))
                             truncatedMatch = int(soup.truncated.string)
                             occlusionMatch = int(soup.occluded.string)
                             # For all objects of the type that the user specifies, area is
                             # calculated and added to a list.
-                            if match.group(2) == objectClass:
+                            if object == objectClass:
                                 if not truncatedMatch and not occlusionMatch:
                                     calculateArea(soup,areaList)
                                 if truncatedMatch and not occlusionMatch:
                                     calculateArea(soup,truncationArea)
                                 if occlusionMatch and not truncatedMatch:
                                     calculateArea(soup,occlusionArea)
+                                if occlusionMatch and truncatedMatch:
+                                    calculateArea(soup,occlusionArea)
             except IOError:
                 sys.stderr.write('There was a problem with file: ' + file +'\n')
-    if noTruncated:
+    if noTruncated is False:
         areaList += truncationArea
-    if noOcclusion:
+    if noOcclusion is False:
         areaList += occlusionArea
+
+    print len(areaList)
     return areaList
 
 """

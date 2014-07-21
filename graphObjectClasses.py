@@ -6,7 +6,6 @@ from BeautifulSoup import BeautifulSoup as bsoup
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import json
 
 """
     Main Program Function:
@@ -25,9 +24,9 @@ import json
 def writeCountedFiles(outputPath,countedList):
     outputFile = os.path.join(outputPath, 'graphObjectClassesData.txt')
     f = open(outputFile, 'w')
-#    print countedList
-#    list = json.dumps(countedList)
-#    print list
+    f.write('Cars=' + str(countedList[0]) + '\n')
+    f.write('Persons=' + str(countedList[1]) + '\n')
+    f.write('Bicycles=' + str(countedList[2]) +'\n')
     f.close()
 
 """
@@ -59,6 +58,7 @@ def parseFiles(annotationsPath):
                     objectList += match.group(2),
             except IOError:
                 errorMessage = "There was a problem with file: " + file
+                print
                 sys.stderr.write(errorMessage)
   else:
     sys.stderr.write("Error - No xml files found.")
@@ -71,24 +71,16 @@ def parseFiles(annotationsPath):
  [Number of Cars, Number of Persons, Number of Bicycles]
 """
 
-def organizeObjectList(dataCheck,objectList=[]):
-  countedObjects = [0,0,0]
-  print objectList
-  if dataCheck is 'n':
-    for objectType in objectList:
-        if objectType == 'car':
-            countedObjects[0] += 1
-        if objectType == 'person':
-            countedObjects[1] += 1
-        if objectType == 'bicycle':
-            countedObjects[2] += 1
-    print countedObjects
-  else:
-    f = open('graphObjectClassesData.txt','r')
+def organizeObjectList(objectList):
     
-    return
-    countedObjects = [carMatch.group(2),personMatch.group(2),bicycleMatch.group(2)]
-    f.close()
+  countedObjects = [0,0,0]
+  for objectType in objectList:
+    if objectType == 'car':
+      countedObjects[0] += 1
+    if objectType == 'person':
+      countedObjects[1] += 1
+    if objectType == 'bicycle':
+      countedObjects[2] += 1
   return countedObjects
 
 """
@@ -165,15 +157,10 @@ def createGraph(countedList,outputPath):
  directory,annotationsPath and outputs it to outputPath
 """
 
-def graphObjectClasses(annotationsPath, outputPath,dataCheck):
-  
-  if dataCheck == 'n':
-    objectList = parseFiles(annotationsPath)
-    countedList = organizeObjectList(dataCheck,objectList=objectList)
-    writeCountedFiles(outputPath,countedList)
-  else:
-    print "Using previously saved data."
-    countedList = organizeObjectList(dataCheck)
+def graphObjectClasses(annotationsPath, outputPath):
+  objectList = parseFiles(annotationsPath)
+  countedList = organizeObjectList(objectList)
+  writeCountedFiles(outputPath,countedList)
   createGraph(countedList,outputPath)
 
 """
@@ -186,9 +173,8 @@ def graphObjectClasses(annotationsPath, outputPath,dataCheck):
 def main():
     annotationsPath = raw_input("Path to the annotations?: ")
     outputPath = raw_input("Output Path?: ")
-    dataCheck = raw_input("Use previous data for computation?: (y/n) ")
-    if os.path.exists(annotationsPath) and os.path.exists(outputPath) and dataCheck.lower() in ("y,n"):
-        graphObjectClasses(annotationsPath,outputPath,dataCheck.lower())
+    if os.path.exists(annotationsPath) and os.path.exists(outputPath):
+        graphObjectClasses(annotationsPath,outputPath)
       # Error messages for broken paths.
     elif not os.path.exists(annotationsPath):
         sys.stderr.write("Error - path does not exist" + '\n')
@@ -198,11 +184,6 @@ def main():
         sys.stderr.write("Error - path does not exist:" + '\n')
         sys.stderr.write("outputPath = " + outputPath + '\n')
         sys.exit(1)
-    elif dataCheck.lower() not in ("y,n"):
-        sys.stderr.write("Error - Please enter in only y or n" + '\n')
-        sys.stderr.write("You entered: " + dataCheck + '\n')
-        sys.exit(1)
-
 
 if __name__ == '__main__':
     main()

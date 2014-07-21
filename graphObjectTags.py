@@ -25,16 +25,12 @@ def addToTagList(soup):
     occlusion = int(soup.occluded.string)
     print truncation,occlusion
     if truncation and occlusion:
-        print "+1: truncated and occluded"
         return('truncated and occluded')
     elif occlusion:
-        print "+1: occluded"
         return('occluded')
     elif truncation:
-        print "+1: truncated"
         return('truncated')
     else:
-        print "+1: none"
         return('none')
 
 def parseFiles(annotationsPath,objectType):

@@ -55,41 +55,17 @@ def parseFiles(annotationsPath,objectType):
 
     for x in range (0,len(parsedObjectXMLList)):
         
-        if parsedObjectXMLList[x] == 'car':
+        if parsedObjectXMLList[x] == objectType:
             if parsedOrientationXMLList[x] == 'Left':
-                (orientationDict['car'])[0]+=1
+                (orientationDict[objectType])[0]+=1
             elif parsedOrientationXMLList[x] == 'Right':
-                (orientationDict['car'])[1]+=1
+                (orientationDict[objectType])[1]+=1
             elif parsedOrientationXMLList[x] == 'Frontal':
-                (orientationDict['car'])[2]+=1
+                (orientationDict[objectType])[2]+=1
             elif parsedOrientationXMLList[x] == 'Rear':
-                (orientationDict['car'])[3]+=1
+                (orientationDict[objectType])[3]+=1
             elif parsedOrientationXMLList[x] == 'Unspecified':
-                (orientationDict['car'])[4]+=1
-    
-        elif parsedObjectXMLList[x] == 'person':
-            if parsedOrientationXMLList[x] == 'Left':
-                (orientationDict['person'])[0]+=1
-            elif parsedOrientationXMLList[x] == 'Right':
-                (orientationDict['person'])[1]+=1
-            elif parsedOrientationXMLList[x] == 'Frontal':
-                (orientationDict['person'])[2]+=1
-            elif parsedOrientationXMLList[x] == 'Rear':
-                (orientationDict['person'])[3]+=1
-            elif parsedOrientationXMLList[x] == 'Unspecified':
-                (orientationDict['person'])[4]+=1
-
-        elif parsedObjectXMLList[x] == 'bicycle':
-            if parsedOrientationXMLList[x] == 'Left':
-                (orientationDict['bicycle'])[0]+=1
-            elif parsedOrientationXMLList[x] == 'Right':
-                (orientationDict['bicycle'])[1]+=1
-            elif parsedOrientationXMLList[x] == 'Frontal':
-                (orientationDict['bicycle'])[2]+=1
-            elif parsedOrientationXMLList[x] == 'Rear':
-                (orientationDict['bicycle'])[3]+=1
-            elif parsedOrientationXMLList[x] == 'Unspecified':
-                (orientationDict['bicycle'])[4]+=1
+                (orientationDict[objectType])[4]+=1
 
     return orientationDict
 
@@ -194,16 +170,7 @@ def main():
     outputPath = raw_input("Output Path?: ")
     objectType = raw_input("What type of object would you like? (car/person/bicycle/all): ")
     if os.path.exists(annotationsPath) and os.path.exists(outputPath):
-        graphObjectOrientation(annotationsPath,outputPath,objectTyp
-    # Error messages for broken paths.
-    elif not os.path.exists(annotationsPath):
-        sys.stderr.write("Error - path does not exist" + '\n')
-        sys.stderr.write("annotationsPath = " + annotationsPath + '\n')
-        sys.exit(1)
-    elif not os.path.exists(outputPath):
-        sys.stderr.write("Error - path does not exist:" + '\n')
-        sys.stderr.write("outputPath = " + outputPath + '\n')
-        sys.exit(1)
+        graphObjectOrientation(annotationsPath,outputPath,objectType)
 
 if __name__ == '__main__':
     main()

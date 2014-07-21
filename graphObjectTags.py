@@ -23,13 +23,18 @@ def countList(tagList):
 def addToTagList(soup):
     truncation = int(soup.truncated.string)
     occlusion = int(soup.occluded.string)
+    print truncation,occlusion
     if truncation and occlusion:
+        print "+1: truncated and occluded"
         return('truncated and occluded')
     elif occlusion:
+        print "+1: occluded"
         return('occluded')
     elif truncation:
+        print "+1: truncated"
         return('truncated')
     else:
+        print "+1: none"
         return('none')
 
 def parseFiles(annotationsPath,objectType):
@@ -49,7 +54,8 @@ def parseFiles(annotationsPath,objectType):
                 # and returns it.
                 parsedXML = (soup.findAll('name'))
                 if objectType == 'all':
-                    tagList.append(addToTagList(soup))
+                    for object in parsedXML:
+                        tagList.append(addToTagList(soup))
                 elif objectType in ('car','person','bicycle'):
                     for object in parsedXML:
                         match = re.search('(<name>)(\w+)(</name>)', str(object))
@@ -71,30 +77,30 @@ def calculatePercentage(countedList):
 
 def createPieChart(countedList,objectType,percentageList,outputPath):
     # The slices will be ordered and plotted counter-clockwise.
-    labels = 'None', 'Truncated', 'Truncated and Occluded', 'Occluded'
+    labels = 'None - ' + str(countedList[0]), 'Truncated - ' + str(countedList[1]), 'Truncated and Occluded - ' + str(countedList[2]), 'Occluded - ' + str(countedList[3])
     sizes = percentageList
     colors = ['yellowgreen', 'gold', 'lightskyblue', 'lightcoral']
-    plt.title('The Distribution of ' + objectType + ' Object by Tag',fontsize=16, fontweight='bold')
+    plt.title('The Distribution of ' + str(sum(countedList)) + ' ' + objectType[0].upper() + str(objectType[1:]) + ' Object by Tag',fontsize=16, fontweight='bold')
     plt.pie(sizes, labels=labels, colors=colors,
     autopct='%1.1f%%', shadow=True, startangle=0)
             # Set aspect ratio to be equal so that pie is drawn as a circle.
     plt.axis('equal')
-            
-            # Asks the user if he or she wants to save the file
-            userInput = ''
-            while userInput is not 'y' or 'n':
-                userInput = raw_input("Would you like to save the figure? (y/n) ")
-                userInput = userInput.lower()
-                if userInput == 'y':
-                    path = os.path.abspath(outputPath)
-                    filename = 'objectTagsFigure_1.png'
-                    fullpath = os.path.join(path, filename)
-                    plt.savefig(fullpath)
-                    break
-                elif userInput == 'n':
-                    break
-                else:
-                    print "Please answer y or n. " '\n'
+#            
+#            # Asks the user if he or she wants to save the file
+#            userInput = ''
+#            while userInput is not 'y' or 'n':
+#                userInput = raw_input("Would you like to save the figure? (y/n) ")
+#                userInput = userInput.lower()
+#                if userInput == 'y':
+#                    path = os.path.abspath(outputPath)
+#                    filename = 'objectTagsFigure_1.png'
+#                    fullpath = os.path.join(path, filename)
+#                    plt.savefig(fullpath)
+#                    break
+#                elif userInput == 'n':
+#                    break
+#                else:
+#                    print "Please answer y or n. " '\n'
     plt.show()
 
 
@@ -115,7 +121,6 @@ def main():
     annotationsPath = raw_input("Path to the annotations?: ")
     outputPath = raw_input("Output Path?: ")
     objectType = raw_input("Which object tags would you like? (all/car/person/bicycle): ")
-    print objectType
     if objectType in ('car','person','bicycle'):
         graphObjectTags(annotationsPath,outputPath,objectType=objectType)
     elif objectType == 'all':

@@ -151,7 +151,7 @@ def main():
     noOcclusion=0
     noTruncated=0
     
-    args = sys.args[1:]
+    args = sys.argv[1:]
     
     annotationsPath = raw_input("Path to the annotations?: ")
     outputPath = raw_input("Output Path?: ")

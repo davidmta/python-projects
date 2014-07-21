@@ -35,12 +35,14 @@ def addToTagList(soup):
 def parseFiles(annotationsPath,objectType):
     tagList = []
     # Retrieves all the files in a directory and checks if they are xml
-    fileList = os.listdir(annotationsPath)
+    annotationsFullPath = os.path.abspath(annotationsPath)
+    fileList = os.listdir(annotationsFullPath)
     for file in fileList:
         fileTypeMatch = re.search('.xml',file)
         if fileTypeMatch:
             try:
-                f = open(file)
+                filePath = os.path.join(annotationsFullPath, file)
+                f = open(filePath)
                 soup = bsoup(f)
                 f.close()
                 # Finds the object of all xml files and places the objects into a list
@@ -54,7 +56,7 @@ def parseFiles(annotationsPath,objectType):
                         if match.group(2) == objectType:
                             tagList.append(addToTagList(soup))
             except IOError:
-                sys.stderr.write('There was a problem with file: ' + file)
+                sys.stderr.write('There was a problem with file: ' + file + '\n')
     return tagList
 
 def calculatePercentage(countedList):
@@ -74,9 +76,9 @@ def createPieChart(countedList,objectType,percentageList,outputPath):
     colors = ['yellowgreen', 'gold', 'lightskyblue', 'lightcoral']
     plt.title('The Distribution of ' + objectType + ' Object by Tag',fontsize=16, fontweight='bold')
     plt.pie(sizes, labels=labels, colors=colors,
-            autopct='%1.1f%%', shadow=True, startangle=0)
+    autopct='%1.1f%%', shadow=True, startangle=0)
             # Set aspect ratio to be equal so that pie is drawn as a circle.
-            plt.axis('equal')
+    plt.axis('equal')
             
             # Asks the user if he or she wants to save the file
             userInput = ''
@@ -93,7 +95,7 @@ def createPieChart(countedList,objectType,percentageList,outputPath):
                     break
                 else:
                     print "Please answer y or n. " '\n'
-            plt.show()
+    plt.show()
 
 
 def graphObjectTags(annotationsPath,outputPath,objectType='all'):
@@ -113,9 +115,10 @@ def main():
     annotationsPath = raw_input("Path to the annotations?: ")
     outputPath = raw_input("Output Path?: ")
     objectType = raw_input("Which object tags would you like? (all/car/person/bicycle): ")
+    print objectType
     if objectType in ('car','person','bicycle'):
-        graphObjectTags(annotationsPath,outputPath,objectType)
-    elif objectType is 'all':
+        graphObjectTags(annotationsPath,outputPath,objectType=objectType)
+    elif objectType == 'all':
         graphObjectTags(annotationsPath,outputPath)
 
 if __name__ == '__main__':

@@ -21,6 +21,10 @@ import matplotlib.pyplot as plt
         Raises:
 """
 
+"""
+ Parses through all the xml files to return a list of objects within the file.
+"""
+
 def writeCountedFiles(outputPath,countedList):
     outputFile = os.path.join(outputPath, 'graphObjectClassesData.txt')
     f = open(outputFile, 'w')
@@ -28,10 +32,6 @@ def writeCountedFiles(outputPath,countedList):
     f.write('Persons=' + str(countedList[1]) + '\n')
     f.write('Bicycles=' + str(countedList[2]) +'\n')
     f.close()
-
-"""
- Parses through all the xml files to return a list of objects within the file.
-"""
 
 def parseFiles(annotationsPath):
   objectList = []
@@ -57,8 +57,7 @@ def parseFiles(annotationsPath):
                     match = re.search('(<name>)(\w+)(</name>)', str(object))
                     objectList += match.group(2),
             except IOError:
-                errorMessage = "There was a problem with file: " + file
-                print
+                errorMessage = "There was a problem with file: " + file + '\n'
                 sys.stderr.write(errorMessage)
   else:
     sys.stderr.write("Error - No xml files found.")
@@ -71,17 +70,24 @@ def parseFiles(annotationsPath):
  [Number of Cars, Number of Persons, Number of Bicycles]
 """
 
-def organizeObjectList(objectList):
-    
-  countedObjects = [0,0,0]
-  for objectType in objectList:
-    if objectType == 'car':
-      countedObjects[0] += 1
-    if objectType == 'person':
-      countedObjects[1] += 1
-    if objectType == 'bicycle':
-      countedObjects[2] += 1
-  return countedObjects
+def organizeObjectList(dataCheck,objectList=[]):
+    if dataCheck is 'n':
+        for objectType in objectList:
+            if objectType == 'car':
+                countedObjects[0] += 1
+            if objectType == 'person':
+                countedObjects[1] += 1
+            if objectType == 'bicycle':
+                countedObjects[2] += 1
+        print countedObjects
+    else:
+        f = open('graphObjectClassesData.txt','r')
+        carMatch = re.search('(Cars=)(\d+)',f.readline())
+        personMatch = re.search('(Persons=)(\d+)',f.readline())
+        bicycleMatch = re.search('(Bicycles=)(\d+)',f.readline())
+        countedObjects = [int(carMatch.group(2)),int(personMatch.group(2)),int(bicycleMatch.group(2))]
+        f.close()
+    return countedObjects
 
 """
   Calculates the percentage of an object type. Returns a list of floats rounded to the thousands.
@@ -157,11 +163,15 @@ def createGraph(countedList,outputPath):
  directory,annotationsPath and outputs it to outputPath
 """
 
-def graphObjectClasses(annotationsPath, outputPath):
-  objectList = parseFiles(annotationsPath)
-  countedList = organizeObjectList(objectList)
-  writeCountedFiles(outputPath,countedList)
-  createGraph(countedList,outputPath)
+def graphObjectClasses(annotationsPath, outputPath,dataCheck):
+    if dataCheck == 'n':
+        objectList = parseFiles(annotationsPath)
+        countedList = organizeObjectList(dataCheck,objectList=objectList)
+        writeCountedFiles(outputPath,countedList)
+    else:
+        print "Using previously saved data."
+        countedList = organizeObjectList(dataCheck)
+    createGraph(countedList,outputPath)
 
 """
  Given the path, it opens the all the xml files.
@@ -173,8 +183,9 @@ def graphObjectClasses(annotationsPath, outputPath):
 def main():
     annotationsPath = raw_input("Path to the annotations?: ")
     outputPath = raw_input("Output Path?: ")
-    if os.path.exists(annotationsPath) and os.path.exists(outputPath):
-        graphObjectClasses(annotationsPath,outputPath)
+    dataCheck = raw_input("Use previous data for computation?: (y/n) ")
+    if os.path.exists(annotationsPath) and os.path.exists(outputPath) and dataCheck.lower() in ("y,n"):
+        graphObjectClasses(annotationsPath,outputPath,dataCheck.lower())
       # Error messages for broken paths.
     elif not os.path.exists(annotationsPath):
         sys.stderr.write("Error - path does not exist" + '\n')
@@ -184,6 +195,11 @@ def main():
         sys.stderr.write("Error - path does not exist:" + '\n')
         sys.stderr.write("outputPath = " + outputPath + '\n')
         sys.exit(1)
+    elif dataCheck.lower() not in ("y,n"):
+        sys.stderr.write("Error - Please enter in only y or n" + '\n')
+        sys.stderr.write("You entered: " + dataCheck + '\n')
+        sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

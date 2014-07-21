@@ -1,5 +1,4 @@
 #!/usr/bin/python
-#!/usr/bin/python
 import os
 import sys
 import re
@@ -36,14 +35,11 @@ def addToTagList(soup):
 def parseFiles(annotationsPath,objectType):
     tagList = []
     # Retrieves all the files in a directory and checks if they are xml
-    annotationsFullPath = os.path.abspath(annotationsPath)
-    fileList = os.listdir(annotationsFullPath)
-    
+    fileList = os.listdir(annotationsPath)
     for file in fileList:
         fileTypeMatch = re.search('.xml',file)
         if fileTypeMatch:
             try:
-                filePath = os.path.join(annotationsFullPath, file)
                 f = open(file)
                 soup = bsoup(f)
                 f.close()
@@ -80,24 +76,24 @@ def createPieChart(countedList,objectType,percentageList,outputPath):
     plt.pie(sizes, labels=labels, colors=colors,
             autopct='%1.1f%%', shadow=True, startangle=0)
             # Set aspect ratio to be equal so that pie is drawn as a circle.
-    plt.axis('equal')
-
-    # Asks the user if he or she wants to save the file
-    userInput = ''
-    while userInput is not 'y' or 'n':
-        userInput = raw_input("Would you like to save the figure? (y/n) ")
-        userInput = userInput.lower()
-        if userInput == 'y':
-            path = os.path.abspath(outputPath)
-            filename = 'objectTagsFigure_1.png'
-            fullpath = os.path.join(path, filename)
-            plt.savefig(fullpath)
-            break
-        elif userInput == 'n':
-            break
-        else:
-            print "Please answer y or n. " '\n'
-    plt.show()
+            plt.axis('equal')
+            
+            # Asks the user if he or she wants to save the file
+            userInput = ''
+            while userInput is not 'y' or 'n':
+                userInput = raw_input("Would you like to save the figure? (y/n) ")
+                userInput = userInput.lower()
+                if userInput == 'y':
+                    path = os.path.abspath(outputPath)
+                    filename = 'objectTagsFigure_1.png'
+                    fullpath = os.path.join(path, filename)
+                    plt.savefig(fullpath)
+                    break
+                elif userInput == 'n':
+                    break
+                else:
+                    print "Please answer y or n. " '\n'
+            plt.show()
 
 
 def graphObjectTags(annotationsPath,outputPath,objectType='all'):
@@ -111,19 +107,15 @@ def graphObjectTags(annotationsPath,outputPath,objectType='all'):
     Use matlab to create a graph to a certain locations.
     Create your own directory if not present.
     Accepting the argument.
-"""
+    """
 
 def main():
-    args = sys.argv[1:]
     annotationsPath = raw_input("Path to the annotations?: ")
     outputPath = raw_input("Output Path?: ")
-    for arg in args:
-        objectMatch = re.search('(objectType)(=)(\w+)',arg)
-    if objectMatch:
-        objectType = objectMatch.group(3).lower()
-        if objectType in ('car','person','bicycle'):
-            graphObjectTags(annotationsPath,outputPath,objectType=objectType)
-    else:
+    objecttype = raw_input("Which object tags would you like? (all/car/person/bicycle): ")
+    if objectType in ('car','person','bicycle'):
+        graphObjectTags(annotationsPath,outputPath,objectType=objectType)
+    else if objectType is 'all':
         graphObjectTags(annotationsPath,outputPath)
 
 if __name__ == '__main__':

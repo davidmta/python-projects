@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# a stacked bar plot with errorbars
 import os
 import sys
 import re
@@ -52,9 +51,10 @@ def parseFiles(annotationsPath,objectType):
             except IOError:
                 sys.stderr.write('There was a problem with file: ' + file + '/n')
 
-
     for x in range (0,len(parsedObjectXMLList)):
-        
+        if objectType == 'all':
+            tempType = 'all'
+            objectType = parsedObjectXMLList[x]
         if parsedObjectXMLList[x] == objectType:
             if parsedOrientationXMLList[x] == 'Left':
                 (orientationDict[objectType])[0]+=1
@@ -66,6 +66,7 @@ def parseFiles(annotationsPath,objectType):
                 (orientationDict[objectType])[3]+=1
             elif parsedOrientationXMLList[x] == 'Unspecified':
                 (orientationDict[objectType])[4]+=1
+            objectType = tempType
 
     return orientationDict
 

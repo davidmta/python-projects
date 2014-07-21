@@ -33,11 +33,13 @@ def parseFiles(annotationsPath):
   
   if len(fileList) > 0:
     for file in fileList:
+        
         fileTypeMatch = re.search('.xml',file)
         if fileTypeMatch:
+            print "Processing file: " + file
             try:
                 filePath = os.path.join(annotationsFullPath, file)
-                f = open(file)
+                f = open(filePath)
                 soup = bsoup(f)
                 f.close()
                 # Finds the object of all xml files and places the objects into a list
@@ -140,7 +142,6 @@ def createGraph(countedList,outputPath):
         break
       else:
         print "Please answer y or n. " '\n'
-
     plt.show()
 
 """

@@ -23,6 +23,7 @@ def parseFiles(annotationsPath,objectType):
     for file in fileList:
         fileTypeMatch = re.search('.xml',file)
         if fileTypeMatch:
+            print "Processing file: " + file
             try:
                 filePath = os.path.join(annotationsFullPath, file)
                 f = open(filePath)
@@ -50,10 +51,10 @@ def parseFiles(annotationsPath,objectType):
                         parsedOrientationXMLList += str(parsedOrientationXML),
             except IOError:
                 sys.stderr.write('There was a problem with file: ' + file + '/n')
-
+    
     for x in range (0,len(parsedObjectXMLList)):
         if objectType == 'all':
-            tempType = 'all'
+            tempType = objectType
             objectType = parsedObjectXMLList[x]
         if parsedObjectXMLList[x] == objectType:
             if parsedOrientationXMLList[x] == 'Left':
@@ -66,7 +67,8 @@ def parseFiles(annotationsPath,objectType):
                 (orientationDict[objectType])[3]+=1
             elif parsedOrientationXMLList[x] == 'Unspecified':
                 (orientationDict[objectType])[4]+=1
-            objectType = tempType
+        if objectType == 'all':
+            tempType = objectType
 
     return orientationDict
 

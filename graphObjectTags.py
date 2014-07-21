@@ -23,7 +23,6 @@ def countList(tagList):
 def addToTagList(soup):
     truncation = int(soup.truncated.string)
     occlusion = int(soup.occluded.string)
-    print truncation,occlusion
     if truncation and occlusion:
         return('truncated and occluded')
     elif occlusion:
@@ -41,6 +40,7 @@ def parseFiles(annotationsPath,objectType):
     for file in fileList:
         fileTypeMatch = re.search('.xml',file)
         if fileTypeMatch:
+            print "Processing file: " + file
             try:
                 filePath = os.path.join(annotationsFullPath, file)
                 f = open(filePath)

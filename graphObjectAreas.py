@@ -80,6 +80,7 @@ def collectObjectArea(annotationsPath,objectClass,noTruncated,noOcclusion):
     for file in fileList:
         fileTypeMatch = re.search('.xml',file)
         if fileTypeMatch:
+            print "Processing file: " + file
             try:
                 filePath = os.path.join(annotationsFullPath, file)
                 f = open(filePath)
@@ -123,8 +124,6 @@ def collectObjectArea(annotationsPath,objectClass,noTruncated,noOcclusion):
         areaList += truncationArea
     if noOcclusion is False:
         areaList += occlusionArea
-
-    print len(areaList)
     return areaList
 
 """

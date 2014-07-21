@@ -21,6 +21,14 @@ import matplotlib.pyplot as plt
         Raises:
 """
 
+def writeCountedFiles(outputPath,countedList):
+    outputFile = os.path.join(outputPath, 'graphObjectClassesData.txt')
+    f = open(outputFile, 'w')
+    f.write('Cars=' + str(countedList[0]) + '\n')
+    f.write('Persons=' + str(countedList[1]) + '\n')
+    f.write('Bicycles=' + str(countedList[2]) +'\n')
+    f.close()
+
 """
  Parses through all the xml files to return a list of objects within the file.
 """
@@ -152,6 +160,7 @@ def createGraph(countedList,outputPath):
 def graphObjectClasses(annotationsPath, outputPath):
   objectList = parseFiles(annotationsPath)
   countedList = organizeObjectList(objectList)
+  writeCountedFiles(outputPath,countedList)
   createGraph(countedList,outputPath)
 
 """

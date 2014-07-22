@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 
 def parseFiles(annotationsPath,objectType):
     orientationDict = {'car':[0,0,0,0,0],'person':[0,0,0,0,0],'bicycle':[0,0,0,0,0]}
+    tempType=''
     # Creates two lists and an object in one list corresponds to the orientation in the other list based on position.
     parsedObjectXMLList = []
     parsedOrientationXMLList = []
@@ -33,7 +34,7 @@ def parseFiles(annotationsPath,objectType):
                 # and returns it.
                 parsedObjectXML = (soup.findAll('name'))
                 parsedOrientationXML = soup.pose.string
-                
+
                 for object in parsedObjectXML:
                     match = re.search('(<name>)(\w+)(</name>)', str(object))
                     object = match.group(2)
@@ -51,8 +52,9 @@ def parseFiles(annotationsPath,objectType):
                         parsedOrientationXMLList += str(parsedOrientationXML),
             except IOError:
                 sys.stderr.write('There was a problem with file: ' + file + '/n')
-    
+
     for x in range (0,len(parsedObjectXMLList)):
+        print x
         if objectType == 'all':
             tempType = objectType
             objectType = parsedObjectXMLList[x]
@@ -67,16 +69,18 @@ def parseFiles(annotationsPath,objectType):
                 (orientationDict[objectType])[3]+=1
             elif parsedOrientationXMLList[x] == 'Unspecified':
                 (orientationDict[objectType])[4]+=1
+
         if tempType == 'all':
             objectType = tempType
-
+    print orientationDict
     return orientationDict
 
 """
     Counts the number of objects and returns a list.
     The list is organized as these lines:
     [Number of Cars, Number of Persons, Number of Bicycles]
-    """
+"""
+
 
 def createAllGraph(objectOrientationDict,outputPath):
     
@@ -101,7 +105,7 @@ def createAllGraph(objectOrientationDict,outputPath):
     p3 = plt.bar(ind, bicycleOrientation, width, color='g',bottom=bicycleBarHeight)
     
     plt.ylabel('The Number of Objects', fontsize=12, fontweight='bold')
-    plt.title('The Distribution of Objects in the Database by Orientation.', fontsize=16, fontweight='bold')
+    plt.title('The Distribution of ' + str(sum(orientationNumber)) + ' Objects in the Database by Orientation.', fontsize=16, fontweight='bold')
     plt.xticks(ind+width/2., ('Left - ' + str(orientationNumber[0]), 'Right - ' + str(orientationNumber[1]), 'Frontal - ' + str(orientationNumber[2]),'Rear - ' + str(orientationNumber[3]),'Unspecified - ' + str(orientationNumber[4])),fontsize=12, fontweight='bold' )
     plt.legend( (p1[0], p2[0],p3[0]), ('Cars', 'Persons','Bicycles'),fancybox = True,shadow = True,frameon = True)
     
@@ -129,9 +133,9 @@ def createSingleObjectPieChart(objectOrientationDict,outputPath,objectType):
     labels = 'Left - ' + str(orientationList[0]), 'Right - ' + str(orientationList[1]), 'Frontal - ' + str(orientationList[2]), 'Rear - ' + str(orientationList[3]), 'Unspecified - ' + str(orientationList[4])
     sizes = objectOrientationDict[objectType]
     colors = ['yellowgreen', 'gold', 'lightskyblue', 'orange','red']
-    plt.title('The Distribution of ' + str(sum(orientationList)) + ' '+ objectType[0].upper + objectType[1:] + ' Object by Orientation.',fontsize=16, fontweight='bold')
+    plt.title('The Distribution of ' + str(sum(orientationList)) + ' '+ objectType[0].upper() + objectType[1:] + ' Object by Orientation.',fontsize=16, fontweight='bold')
     plt.pie(sizes, labels=labels, colors=colors,
-            autopct='%1.1f%%', shadow=True, startangle=0)
+            autopct='%1.1f%%', shadow=True, startangle=45)
     # Set aspect ratio to be equal so that pie is drawn as a circle.
     plt.axis('equal')
     while userInput is not 'y' or 'n':

@@ -40,8 +40,8 @@ def parseFiles(annotationsPath):
   fileList = os.listdir(annotationsFullPath)
   
   if len(fileList) > 0:
+    lastFile = ''
     for file in fileList:
-        
         fileTypeMatch = re.search('.xml',file)
         if fileTypeMatch:
             print "Processing file: " + file
@@ -57,8 +57,7 @@ def parseFiles(annotationsPath):
                     match = re.search('(<name>)(\w+)(</name>)', str(object))
                     objectList += match.group(2),
             except IOError:
-                errorMessage = "There was a problem with file: " + file + '\n'
-                sys.stderr.write(errorMessage)
+                sys.stderr.write("There was a problem with file: " + file + '\n')
   else:
     sys.stderr.write("Error - No xml files found.")
     sys.exit(1)

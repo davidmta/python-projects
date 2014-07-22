@@ -67,8 +67,8 @@ def parseFiles(annotationsPath,objectType):
                 (orientationDict[objectType])[3]+=1
             elif parsedOrientationXMLList[x] == 'Unspecified':
                 (orientationDict[objectType])[4]+=1
-        if objectType == 'all':
-            tempType = objectType
+        if tempType == 'all':
+            objectType = tempType
 
     return orientationDict
 
@@ -129,7 +129,7 @@ def createSingleObjectPieChart(objectOrientationDict,outputPath,objectType):
     labels = 'Left - ' + str(orientationList[0]), 'Right - ' + str(orientationList[1]), 'Frontal - ' + str(orientationList[2]), 'Rear - ' + str(orientationList[3]), 'Unspecified - ' + str(orientationList[4])
     sizes = objectOrientationDict[objectType]
     colors = ['yellowgreen', 'gold', 'lightskyblue', 'orange','red']
-    plt.title('The Distribution of ' + objectType + ' Object by Orientation.',fontsize=16, fontweight='bold')
+    plt.title('The Distribution of ' + str(sum(orientationList)) + ' '+ objectType[0].upper + objectType[1:] + ' Object by Orientation.',fontsize=16, fontweight='bold')
     plt.pie(sizes, labels=labels, colors=colors,
             autopct='%1.1f%%', shadow=True, startangle=0)
     # Set aspect ratio to be equal so that pie is drawn as a circle.

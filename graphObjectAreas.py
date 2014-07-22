@@ -60,10 +60,10 @@ def createGraph(areaList,outputPath,objectClass,noTruncated,noOcclusion):
     plt.show()
 
 def calculateArea(soup,list):
-        xLength = int(soup.xmax.string) - int(soup.xmin.string)
-        yLength = int(soup.ymax.string) - int(soup.ymin.string)
-        area = xLength*yLength
-        list.append(area)
+    xLength = int(soup.xmax.string) - int(soup.xmin.string)
+    yLength = int(soup.ymax.string) - int(soup.ymin.string)
+    area = xLength*yLength
+    list.append(area)
 
 """
     Finds of the area of all bounding boxes in xml files and
@@ -150,7 +150,6 @@ def graphObjectAreas(annotationsPath,outputPath, objectClass='all',noTruncated=F
 """
 
 def main():
-    
     objectType='all'
     noOcclusion=0
     noTruncated=0
@@ -160,6 +159,7 @@ def main():
     annotationsPath = raw_input("Path to the annotations?: ")
     outputPath = raw_input("Output Path?: ")
     objectType = raw_input("What type of Object?: (all/car/person/bicycle) ")
+    
       # Checks args for optional parameter,objectClass, noTruncatedMatch, noOcclusionMatch
     for arg in args:
         noTruncatedMatch = re.search('(noTruncated=)(True)',arg)

@@ -19,7 +19,7 @@ from sets import Set
 # Allows user to make changes to marked photos.
 
 
-def createImageDict(annotationsFileList,photoFileList):
+def createImageDict(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags):
     imageDict = {}
     annotationsSet = Set(annotationsFileList)
     for photo in photoFileList:
@@ -27,8 +27,20 @@ def createImageDict(annotationsFileList,photoFileList):
         if photoMatch:
             xml = str(photoMatch.group(1)) + str(photoMatch.group(2)) + '.xml'
             if xml in annotationsSet:
-                print "Processing file: " + photo
-                imageDict[photo] = xml
+                xmlPath = os.path.join(annotationsFullPath, xml)
+                f = open(xmlPath)
+                soup = bsoup(f)
+                f.close()
+                parsedXML = soup.findAll('name')
+                nameMatch = re.search('(<name>)(\w+)(</name>)', str(parsedXML))
+                for name in parsedXML:
+                    if classes.lower() == nameMatch.group(2):
+                        if orientation.lower() in (soup.pose.string.lower(),'all'):
+                            if tags.lower() in ('none',soup.truncated.string.lower(), soup.occluded.string.lower()) or tags.lower() == 'occluded and truncated' and int(soup.occluded.string) and int(soup.truncated.string):
+                                print "Processing file: " + photo
+                                imageDict[photo] = xml
+    print imageDict
+    return imageDict
 
 def createImages():
     
@@ -57,23 +69,48 @@ def createImages():
     
     doneButton = Tkinter.Button(root, text="done")
     doneButton.pack(side='left', expand='true')
-
     root.mainloop()
 
 
-def main():
-    photoPath = raw_input("Path to the photos?: ")
+
+def createAnnotationsFileList():
     annotationsPath = raw_input("Path to the annotations?: ")
-        
     annotationsFullPath = os.path.abspath(annotationsPath)
+    return os.listdir(annotationsFullPath),annotationsFullPath
+
+def createPhotoFileList():
+    photoPath = raw_input("Path to the photos?: ")
     photoFullPath = os.path.abspath(photoPath)
+    return os.listdir(photoFullPath)
+
+def getDesiredObjects():
+    while(1):
+        classes = raw_input("Which class? (car/person/bicycle): ")
+        if classes.lower() in ('car','person','bicycle'):
+            break
+        else:
+            print "Please enter a valid response. You entered " + classes
+    while(1):
+        orientation = raw_input("Which orientation? (left/right/frontal/rear/all): ")
+        if orientation.lower() in ('left','right','frontal','rear','all'):
+            break
+        else:
+            print "Please enter a valid response. You entered " + orientation
+    while(1):
+        tags = raw_input("Which tag? (none/occluded/truncated/occluded and truncated): ")
+        if tags.lower() in ('none','occluded','truncated','occluded and truncated'):
+            break
+        else:
+            print "Please enter a valid response. You entered " + tags
+    return classes, orientation,tags
+
+
+def main():
+    classes, orientation, tags = getDesiredObjects()
+    annotationsFileList,annotationsFullPath = createAnnotationsFileList()
+    photoFileList = createPhotoFileList()
     
-    annotationsFileList = os.listdir(annotationsFullPath)
-    photoFileList = os.listdir(photoFullPath)
-
-    createImageDict(annotationsFileList,photoFileList)
-
-
+    imageDict = createImageDict(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags)
 
 if __name__ == '__main__':
     main()

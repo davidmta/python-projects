@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import Tkinter
 from PIL import Image, ImageTk
 from sets import Set
+import collections
+
 
 # Accept inputs for certain types of photos
 # Returns photos.
@@ -19,8 +21,9 @@ from sets import Set
 # Allows user to make changes to marked photos.
 
 
-def createImageDict(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags):
-    imageDict = {}
+def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags):
+    imageDict = collections.OrderedDict()
+    imageDimension = []
     annotationsSet = Set(annotationsFileList)
     for photo in photoFileList:
         photoMatch = re.search('(2014_)(\w+)(.png)',photo)
@@ -39,39 +42,25 @@ def createImageDict(annotationsFileList,photoFileList,annotationsFullPath,classe
                             if tags.lower() in ('none',soup.truncated.string.lower(), soup.occluded.string.lower()) or tags.lower() == 'occluded and truncated' and int(soup.occluded.string) and int(soup.truncated.string):
                                 print "Processing file: " + photo
                                 imageDict[photo] = xml
-    print imageDict
-    return imageDict
+                                imageDimension.append([int(soup.xmin.string),int(soup.ymin.string),int(soup.xmax.string),int(soup.ymax.string)])
+    return imageDict,imageDimension
 
-def createImages():
-    
+def createCanvas(imageDict,imageDimension):
+    photoList = []
     root = Tkinter.Tk()
     root.title("Reviewing Annotations")
     root.maxsize(1200, 750)
-    imageList = []
-    for file in photoFileList:
-        photoMatch = re.search('(2014_)(\w+)(.png)',file)
-        if photoMatch:
-#            annotationMatch = re.search(str((photoMatch.group(2))+'.xml'),fileList)
-#            if annotationMatch:
-            image = Image.open(file)
-            tk_image = ImageTk.PhotoImage(image)
-            imageList.append(tk_image)
-
-
-    print imageList
+    
+    for photo, dimension in zip(imageDict,imageDimension):
+        image = Image.open(photo)
+        image = image.crop((dimension[0], dimension[1], dimension[2], dimension[3]))
+        tk_image = ImageTk.PhotoImage(image)
+        photoList.append(tk_image)
     canvas = Tkinter.Canvas(root, bd=0, highlightthickness=0,width=1000,height=750)
     canvas.pack()
     canvas.create_image(0, 0, image=tk_image, anchor='nw')
 
-
-    #    image = image.crop((0, 0, 200, 200))
-    
-    
-    doneButton = Tkinter.Button(root, text="done")
-    doneButton.pack(side='left', expand='true')
     root.mainloop()
-
-
 
 def createAnnotationsFileList():
     annotationsPath = raw_input("Path to the annotations?: ")
@@ -109,8 +98,8 @@ def main():
     classes, orientation, tags = getDesiredObjects()
     annotationsFileList,annotationsFullPath = createAnnotationsFileList()
     photoFileList = createPhotoFileList()
-    
-    imageDict = createImageDict(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags)
+    imageDict,imageDimension = organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags)
+    createCanvas(imageDict,imageDimension)
 
 if __name__ == '__main__':
     main()

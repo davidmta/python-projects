@@ -11,7 +11,6 @@ from PIL import Image, ImageTk
 from sets import Set
 import collections
 
-
 # Accept inputs for certain types of photos
 # Returns photos.
 # Opens all the photos in a reasonable manner
@@ -19,7 +18,6 @@ import collections
 # Allow changing the brightness of photos.
 # Allows user not to have to open marked photos.
 # Allows user to make changes to marked photos.
-
 
 def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags):
     imageDict = collections.OrderedDict()
@@ -49,19 +47,35 @@ def createCanvas(imageDict,imageDimension):
     photoList = []
     root = Tkinter.Tk()
     root.title("Reviewing Annotations")
-    root.maxsize(1200, 750)
+    
     
     for photo, dimension in zip(imageDict,imageDimension):
         image = Image.open(photo)
         image = image.crop((dimension[0], dimension[1], dimension[2], dimension[3]))
+        size = 150, 300
+        image = image.resize(size)
         tk_image = ImageTk.PhotoImage(image)
         photoList.append(tk_image)
+    X_COORDINATE = 0
     canvas = Tkinter.Canvas(root, bd=0, highlightthickness=0,width=1000,height=750)
     canvas.pack()
-    canvas.create_image(0, 0, image=tk_image, anchor='nw')
+
+    for photo in photoList:
+        print photo
+        canvas.create_image(X_COORDINATE, 0, image=photo, anchor='nw')
+        X_COORDINATE+=size[0]
+    
+
+
+
+#    canvas.create_image(X, 0, image=photoList[1], anchor='nw')
+#    X+=150
+#    canvas.create_image(X, 0, image=photoList[0], anchor='nw')
+
 
     root.mainloop()
 
+#Simplify.
 def createAnnotationsFileList():
     annotationsPath = raw_input("Path to the annotations?: ")
     annotationsFullPath = os.path.abspath(annotationsPath)
@@ -72,6 +86,7 @@ def createPhotoFileList():
     photoFullPath = os.path.abspath(photoPath)
     return os.listdir(photoFullPath)
 
+# Reduce redundancy.
 def getDesiredObjects():
     while(1):
         classes = raw_input("Which class? (car/person/bicycle): ")

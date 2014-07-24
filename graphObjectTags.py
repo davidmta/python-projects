@@ -76,7 +76,7 @@ def createPieChart(countedList,objectType,percentageList,outputPath):
     labels = 'None - ' + str(countedList[0]), 'Truncated - ' + str(countedList[1]), 'Truncated and Occluded - ' + str(countedList[2]), 'Occluded - ' + str(countedList[3])
     sizes = percentageList
     colors = ['yellowgreen', 'gold', 'lightskyblue', 'lightcoral']
-    plt.title('The Distribution of ' + str(sum(countedList)) + ' ' + objectType[0].upper() + str(objectType[1:]) + ' Object by Tag',fontsize=16, fontweight='bold')
+    plt.title('The Distribution of ' + str(sum(countedList)) + ' ' + objectType[0].upper() + str(objectType[1:]) + ' Object by Tag',fontsize=18, fontweight='bold')
     plt.pie(sizes, labels=labels, colors=colors,
     autopct='%1.1f%%', shadow=True, startangle=0)
             # Set aspect ratio to be equal so that pie is drawn as a circle.

@@ -54,7 +54,6 @@ def parseFiles(annotationsPath,objectType):
                 sys.stderr.write('There was a problem with file: ' + file + '/n')
 
     for x in range (0,len(parsedObjectXMLList)):
-        print x
         if objectType == 'all':
             tempType = objectType
             objectType = parsedObjectXMLList[x]
@@ -72,7 +71,6 @@ def parseFiles(annotationsPath,objectType):
 
         if tempType == 'all':
             objectType = tempType
-    print orientationDict
     return orientationDict
 
 """
@@ -105,7 +103,7 @@ def createAllGraph(objectOrientationDict,outputPath):
     p3 = plt.bar(ind, bicycleOrientation, width, color='g',bottom=bicycleBarHeight)
     
     plt.ylabel('The Number of Objects', fontsize=12, fontweight='bold')
-    plt.title('The Distribution of ' + str(sum(orientationNumber)) + ' Objects in the Database by Orientation.', fontsize=16, fontweight='bold')
+    plt.title('The Distribution of ' + str(sum(orientationNumber)) + ' Objects' + '\n' +'in the Database by Orientation.', fontsize=18, fontweight='bold')
     plt.xticks(ind+width/2., ('Left - ' + str(orientationNumber[0]), 'Right - ' + str(orientationNumber[1]), 'Frontal - ' + str(orientationNumber[2]),'Rear - ' + str(orientationNumber[3]),'Unspecified - ' + str(orientationNumber[4])),fontsize=12, fontweight='bold' )
     plt.legend( (p1[0], p2[0],p3[0]), ('Cars', 'Persons','Bicycles'),fancybox = True,shadow = True,frameon = True)
     
@@ -133,6 +131,7 @@ def createSingleObjectPieChart(objectOrientationDict,outputPath,objectType):
     labels = 'Left - ' + str(orientationList[0]), 'Right - ' + str(orientationList[1]), 'Frontal - ' + str(orientationList[2]), 'Rear - ' + str(orientationList[3]), 'Unspecified - ' + str(orientationList[4])
     sizes = objectOrientationDict[objectType]
     colors = ['yellowgreen', 'gold', 'lightskyblue', 'orange','red']
+    plt.subplots_adjust(top=0.85)
     plt.title('The Distribution of ' + str(sum(orientationList)) + ' '+ objectType[0].upper() + objectType[1:] + ' Object by Orientation.',fontsize=16, fontweight='bold')
     plt.pie(sizes, labels=labels, colors=colors,
             autopct='%1.1f%%', shadow=True, startangle=45)

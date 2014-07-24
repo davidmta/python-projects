@@ -18,10 +18,14 @@ import collections
 # Allow changing the brightness of photos.
 # Allows user not to have to open marked photos.
 # Allows user to make changes to marked photos.
+# Add in failsafes.
+# think about using descendants.
+# 2 Tkinter.
 
 def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags):
     imageDict = collections.OrderedDict()
     imageDimension = []
+    root = Tkinter.Tk()
     annotationsSet = Set(annotationsFileList)
     for photo in photoFileList:
         photoMatch = re.search('(2014_)(\w+)(.png)',photo)
@@ -32,47 +36,61 @@ def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,clas
                 f = open(xmlPath)
                 soup = bsoup(f)
                 f.close()
-                parsedXML = soup.findAll('name')
-                nameMatch = re.search('(<name>)(\w+)(</name>)', str(parsedXML))
-                for name in parsedXML:
-                    if classes.lower() == nameMatch.group(2):
-                        if orientation.lower() in (soup.pose.string.lower(),'all'):
-                            if tags.lower() in ('none',soup.truncated.string.lower(), soup.occluded.string.lower()) or tags.lower() == 'occluded and truncated' and int(soup.occluded.string) and int(soup.truncated.string):
+                nameTagList = re.findall('(<name>)(\w+)(</name>)', str(soup))
+                truncationTagList = re.findall('(<truncated>)(\d)(</truncated>)',str(soup))
+                occludedTagList = re.findall('(<occluded>)(\d)(</occluded>)',str(soup))
+                poseTagList = re.findall('(<pose>)(\w+)(</pose>)',str(soup))
+                xminTagList = re.findall('(<xmin>)(\d+)(</xmin>)',str(soup))
+                yminTagList = re.findall('(<ymin>)(\d+)(</ymin>)',str(soup))
+                xmaxTagList = re.findall('(<xmax>)(\d+)(</xmax>)',str(soup))
+                ymaxTagList = re.findall('(<ymax>)(\d+)(</ymax>)',str(soup))
+                for name,truncation,occluded,pose,xmin,ymin,xmax,ymax in zip(nameTagList,truncationTagList,occludedTagList,poseTagList,
+                    xminTagList,yminTagList,xmaxTagList,ymaxTagList):
+                    print truncation[1],occluded[1],pose[1],xmin[1],ymin[1],xmax[1],ymax[1]
+                    
+                    if classes.lower() == name[1]:
+                        if orientation.lower() in (pose[1],'all'):
+                            if tags.lower() == 'none' or tags.lower() == 'occluded' and int(occluded[1]) or tags.lower() == 'truncated' and int(truncation[1]) or tags.lower() == 'occluded and truncated' and int(occluded[1]) and int(truncation[1]):
                                 print "Processing file: " + photo
-                                imageDict[photo] = xml
-                                imageDimension.append([int(soup.xmin.string),int(soup.ymin.string),int(soup.xmax.string),int(soup.ymax.string)])
-    return imageDict,imageDimension
+                                if classes.lower() == 'person':
+                                    size = 150, 300
+                                else:
+                                    size = 300, 150
+                                image = Image.open(photo)
+                                image = image.crop((int(xmin[1]),int(ymin[1]),int(xmax[1]),int(ymax[1])))
 
-def createCanvas(imageDict,imageDimension):
-    photoList = []
-    root = Tkinter.Tk()
-    root.title("Reviewing Annotations")
-    
-    
-    for photo, dimension in zip(imageDict,imageDimension):
-        image = Image.open(photo)
-        image = image.crop((dimension[0], dimension[1], dimension[2], dimension[3]))
-        size = 150, 300
-        image = image.resize(size)
-        tk_image = ImageTk.PhotoImage(image)
-        photoList.append(tk_image)
+                                image = image.resize(size)
+                                image = ImageTk.PhotoImage(image)
+                                imageDict[image] = xml
+#                                imageDimension.append([int(xmin[1]),int(ymin[1]),int(xmax[1]),int(ymax[1])])
+    return imageDict,imageDimension,root,size
+
+def createCanvas(imageDict,imageDimension,classes,root,size):
+    print "Creating Canvas."
+#    root = Tkinter.Tk()
+#    root.title("Reviewing Annotations")
+#    for photo, dimension in zip(imageDict,imageDimension):
+#        photo = photo.crop((dimension[0], dimension[1], dimension[2], dimension[3]))
+
     X_COORDINATE = 0
-    canvas = Tkinter.Canvas(root, bd=0, highlightthickness=0,width=1000,height=750)
+    X_INCREMENT = 0
+    Y_COORDINATE = 0
+    Y_INCREMENT = 0
+    canvas = Tkinter.Canvas(root, bd=0, highlightthickness=0,width=1050,height=750)
     canvas.pack()
 
-    for photo in photoList:
-        print photo
-        canvas.create_image(X_COORDINATE, 0, image=photo, anchor='nw')
+    # could another function. determine increment.
+
+    for photo in imageDict:
+#        photo = ImageTk.PhotoImage(photo)
+
+        if X_COORDINATE >= 1050:
+            print X_COORDINATE,Y_COORDINATE
+            X_COORDINATE = 0
+            Y_COORDINATE += size[1]
+        print X_COORDINATE,Y_COORDINATE
+        canvas.create_image(X_COORDINATE, Y_COORDINATE, image=photo, anchor='nw')
         X_COORDINATE+=size[0]
-    
-
-
-
-#    canvas.create_image(X, 0, image=photoList[1], anchor='nw')
-#    X+=150
-#    canvas.create_image(X, 0, image=photoList[0], anchor='nw')
-
-
     root.mainloop()
 
 #Simplify.
@@ -82,7 +100,7 @@ def createAnnotationsFileList():
     return os.listdir(annotationsFullPath),annotationsFullPath
 
 def createPhotoFileList():
-    photoPath = raw_input("Path to the photos?: ")
+    photoPath = raw_input("Path to the photos in png format?: ")
     photoFullPath = os.path.abspath(photoPath)
     return os.listdir(photoFullPath)
 
@@ -113,8 +131,8 @@ def main():
     classes, orientation, tags = getDesiredObjects()
     annotationsFileList,annotationsFullPath = createAnnotationsFileList()
     photoFileList = createPhotoFileList()
-    imageDict,imageDimension = organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags)
-    createCanvas(imageDict,imageDimension)
+    imageDict,imageDimension,root,size = organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags)
+    createCanvas(imageDict,imageDimension,classes,root,size)
 
 if __name__ == '__main__':
     main()

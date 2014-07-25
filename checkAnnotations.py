@@ -19,7 +19,8 @@ import collections
 # think about using descendants.
 # 2 Tkinter.
 
-def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags):
+def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,photoFullPath, classes, orientation, tags):
+    size = 0,0
     imageDict = collections.OrderedDict()
     root = Tk()
     annotationsSet = Set(annotationsFileList)
@@ -42,22 +43,28 @@ def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,clas
                 ymaxTagList = re.findall('(<ymax>)(\d+)(</ymax>)',str(soup))
                 for name,truncation,occluded,pose,xmin,ymin,xmax,ymax in zip(nameTagList,truncationTagList,occludedTagList,poseTagList,
                     xminTagList,yminTagList,xmaxTagList,ymaxTagList):
-                    print truncation[1],occluded[1],pose[1],xmin[1],ymin[1],xmax[1],ymax[1]
-                    
+                    print "Processing file: " + xml
                     if classes.lower() == name[1]:
-                        if orientation.lower() in (pose[1],'all'):
+                        if orientation.lower() in (pose[1].lower(),'all'):
                             if tags.lower() == 'none' or tags.lower() == 'occluded' and int(occluded[1]) or tags.lower() == 'truncated' and int(truncation[1]) or tags.lower() == 'occluded and truncated' and int(occluded[1]) and int(truncation[1]):
                                 print "Processing file: " + photo
                                 if classes.lower() == 'person':
                                     size = 150, 300
                                 else:
                                     size = 300, 150
-                                image = Image.open(photo)
+                                photoPath = os.path.join(photoFullPath, photo)
+                                image = Image.open(photoPath)
                                 image = image.crop((int(xmin[1]),int(ymin[1]),int(xmax[1]),int(ymax[1])))
                                 image = image.resize(size)
                                 image = ImageTk.PhotoImage(image)
                                 imageDict[image] = xml
     return imageDict,root,size
+
+def image_clicked(event):
+    print event.x, event.y
+    print "an image on the canvas was clicked!"
+    print "now opening xml file..."
+#todo: open xml file here
 
 def createCanvas(imageDict,classes,root,size):
     print "Creating Canvas."
@@ -69,13 +76,7 @@ def createCanvas(imageDict,classes,root,size):
     
     frame=Frame(root)
     frame.grid(row=0,column=0)
-    if classes == 'person':
-        totalHeight = (len(imageDict)/7)*size[1] + 300
-    else:
-        totalHeight = (len(imageDict)/4)*size[1]
-    print totalHeight
-  
-    canvas=Canvas(frame,bg='#FFFFFF',width=1050,height=750,scrollregion=(0,0,1200,totalHeight))
+    canvas=Canvas(frame,bg='#FFFFFF',width=1050,height=750)
 
     vbar=Scrollbar(frame,orient=VERTICAL)
     vbar.pack(side=RIGHT,fill=Y)
@@ -83,17 +84,16 @@ def createCanvas(imageDict,classes,root,size):
     canvas.config(yscrollcommand=vbar.set)
     canvas.pack(side=LEFT,expand=True,fill=BOTH)
 
-
     # could another function. determine increment.
-
     for photo in imageDict:
         if X_COORDINATE >= 1200:
-            print X_COORDINATE,Y_COORDINATE
             X_COORDINATE = 0
             Y_COORDINATE += size[1]
-        print X_COORDINATE,Y_COORDINATE
-        canvas.create_image(X_COORDINATE, Y_COORDINATE, image=photo, anchor='nw')
+        canvas.create_image(X_COORDINATE, Y_COORDINATE, image=photo, anchor='nw', tag="openAnnotation")
         X_COORDINATE+=size[0]
+    canvas.config(scrollregion=(0,0,1200,Y_COORDINATE+300))
+    canvas.tag_bind("openAnnotation", "<1>", image_clicked)
+
     root.mainloop()
 
 #Simplify.
@@ -105,7 +105,7 @@ def createAnnotationsFileList():
 def createPhotoFileList():
     photoPath = raw_input("Path to the photos in png format?: ")
     photoFullPath = os.path.abspath(photoPath)
-    return os.listdir(photoFullPath)
+    return os.listdir(photoFullPath),photoFullPath
 
 # Reduce redundancy.
 def getDesiredObjects():
@@ -133,8 +133,8 @@ def getDesiredObjects():
 def main():
     classes, orientation, tags = getDesiredObjects()
     annotationsFileList,annotationsFullPath = createAnnotationsFileList()
-    photoFileList = createPhotoFileList()
-    imageDict,root,size = organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags)
+    photoFileList,photoFullPath = createPhotoFileList()
+    imageDict,root,size = organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,photoFullPath,classes, orientation, tags)
     createCanvas(imageDict,classes,root,size)
 
 if __name__ == '__main__':

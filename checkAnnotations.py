@@ -6,7 +6,7 @@ from BeautifulSoup import BeautifulSoup as bsoup
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import Tkinter
+from Tkinter import *
 from PIL import Image, ImageTk
 from sets import Set
 import collections
@@ -14,18 +14,14 @@ import collections
 # Accept inputs for certain types of photos
 # Returns photos.
 # Opens all the photos in a reasonable manner
-# Can somehow mark photos.
 # Allow changing the brightness of photos.
-# Allows user not to have to open marked photos.
-# Allows user to make changes to marked photos.
 # Add in failsafes.
 # think about using descendants.
 # 2 Tkinter.
 
 def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags):
     imageDict = collections.OrderedDict()
-    imageDimension = []
-    root = Tkinter.Tk()
+    root = Tk()
     annotationsSet = Set(annotationsFileList)
     for photo in photoFileList:
         photoMatch = re.search('(2014_)(\w+)(.png)',photo)
@@ -58,33 +54,40 @@ def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,clas
                                     size = 300, 150
                                 image = Image.open(photo)
                                 image = image.crop((int(xmin[1]),int(ymin[1]),int(xmax[1]),int(ymax[1])))
-
                                 image = image.resize(size)
                                 image = ImageTk.PhotoImage(image)
                                 imageDict[image] = xml
-#                                imageDimension.append([int(xmin[1]),int(ymin[1]),int(xmax[1]),int(ymax[1])])
-    return imageDict,imageDimension,root,size
+    return imageDict,root,size
 
-def createCanvas(imageDict,imageDimension,classes,root,size):
+def createCanvas(imageDict,classes,root,size):
     print "Creating Canvas."
-#    root = Tkinter.Tk()
-#    root.title("Reviewing Annotations")
-#    for photo, dimension in zip(imageDict,imageDimension):
-#        photo = photo.crop((dimension[0], dimension[1], dimension[2], dimension[3]))
 
     X_COORDINATE = 0
     X_INCREMENT = 0
     Y_COORDINATE = 0
     Y_INCREMENT = 0
-    canvas = Tkinter.Canvas(root, bd=0, highlightthickness=0,width=1050,height=750)
-    canvas.pack()
+    
+    frame=Frame(root)
+    frame.grid(row=0,column=0)
+    if classes == 'person':
+        totalHeight = (len(imageDict)/7)*size[1] + 300
+    else:
+        totalHeight = (len(imageDict)/4)*size[1]
+    print totalHeight
+  
+    canvas=Canvas(frame,bg='#FFFFFF',width=1050,height=750,scrollregion=(0,0,1200,totalHeight))
+
+    vbar=Scrollbar(frame,orient=VERTICAL)
+    vbar.pack(side=RIGHT,fill=Y)
+    vbar.config(command=canvas.yview)
+    canvas.config(yscrollcommand=vbar.set)
+    canvas.pack(side=LEFT,expand=True,fill=BOTH)
+
 
     # could another function. determine increment.
 
     for photo in imageDict:
-#        photo = ImageTk.PhotoImage(photo)
-
-        if X_COORDINATE >= 1050:
+        if X_COORDINATE >= 1200:
             print X_COORDINATE,Y_COORDINATE
             X_COORDINATE = 0
             Y_COORDINATE += size[1]
@@ -131,8 +134,8 @@ def main():
     classes, orientation, tags = getDesiredObjects()
     annotationsFileList,annotationsFullPath = createAnnotationsFileList()
     photoFileList = createPhotoFileList()
-    imageDict,imageDimension,root,size = organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags)
-    createCanvas(imageDict,imageDimension,classes,root,size)
+    imageDict,root,size = organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,classes, orientation, tags)
+    createCanvas(imageDict,classes,root,size)
 
 if __name__ == '__main__':
     main()

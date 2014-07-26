@@ -20,9 +20,13 @@ import collections
 # 2 Tkinter.
 
 def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,photoFullPath, classes, orientation, tags):
-    size = 0,0
+    if classes.lower() == 'person':
+        size = 150, 300
+    else:
+        size = 300, 150
     imageDict = collections.OrderedDict()
     root = Tk()
+
     annotationsSet = Set(annotationsFileList)
     for photo in photoFileList:
         photoMatch = re.search('(2014_)(\w+)(.png)',photo)
@@ -46,12 +50,8 @@ def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,phot
                     print "Processing file: " + xml
                     if classes.lower() == name[1]:
                         if orientation.lower() in (pose[1].lower(),'all'):
-                            if tags.lower() == 'none' or tags.lower() == 'occluded' and int(occluded[1]) or tags.lower() == 'truncated' and int(truncation[1]) or tags.lower() == 'occluded and truncated' and int(occluded[1]) and int(truncation[1]):
+                            if tags.lower() == 'none' and int(truncation[1]) == 0 and int(occluded[1]) == 0 or tags.lower() == 'occluded' and int(occluded[1]) or tags.lower() == 'truncated' and int(truncation[1]) or tags.lower() == 'occluded and truncated' and int(occluded[1]) and int(truncation[1]):
                                 print "Processing file: " + photo
-                                if classes.lower() == 'person':
-                                    size = 150, 300
-                                else:
-                                    size = 300, 150
                                 photoPath = os.path.join(photoFullPath, photo)
                                 image = Image.open(photoPath)
                                 image = image.crop((int(xmin[1]),int(ymin[1]),int(xmax[1]),int(ymax[1])))
@@ -60,40 +60,42 @@ def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,phot
                                 imageDict[image] = xml
     return imageDict,root,size
 
-def image_clicked(event):
-    print event.x, event.y
-    print "an image on the canvas was clicked!"
-    print "now opening xml file..."
-#todo: open xml file here
-
-def createCanvas(imageDict,classes,root,size):
+def createCanvas(imageDict,classes,root,size,orientation, tags):
     print "Creating Canvas."
-
     X_COORDINATE = 0
     X_INCREMENT = 0
     Y_COORDINATE = 0
     Y_INCREMENT = 0
+    positionDict = {}
     
-    frame=Frame(root)
+    frame=Frame(root, height=300, width=150)
     frame.grid(row=0,column=0)
-    canvas=Canvas(frame,bg='#FFFFFF',width=1050,height=750)
+    canvas=Canvas(frame,width=1200,height=750)
+
+    positionDict = {}
+
+    # could another function. determine increment.
+    for photo in imageDict:
+        if X_COORDINATE >= 1200:
+            X_COORDINATE = 0
+            Y_COORDINATE += (size[1] + 30)
+        canvas.create_image(X_COORDINATE, Y_COORDINATE, image=photo, anchor='nw')
+        canvas.create_text(X_COORDINATE + size[0]/2, Y_COORDINATE + size[1] + 10,text=imageDict[photo],justify=RIGHT)
+        X_COORDINATE+=size[0]
+        positionDict[imageDict[photo]] = (X_COORDINATE,Y_COORDINATE+size[1])
+    canvas.config(scrollregion=(0,0,1200,Y_COORDINATE+size[1]+ 30))
+
+    title = 'Showing ' + str(en(positionDict)) + ' ' + classes + ' objects' + ' in orientation: ' + orientation
+    if tags != 'none':
+        title += ' with in tag: ' + tags
+    root.wm_title(title)
 
     vbar=Scrollbar(frame,orient=VERTICAL)
     vbar.pack(side=RIGHT,fill=Y)
     vbar.config(command=canvas.yview)
     canvas.config(yscrollcommand=vbar.set)
     canvas.pack(side=LEFT,expand=True,fill=BOTH)
-
-    # could another function. determine increment.
-    for photo in imageDict:
-        if X_COORDINATE >= 1200:
-            X_COORDINATE = 0
-            Y_COORDINATE += size[1]
-        canvas.create_image(X_COORDINATE, Y_COORDINATE, image=photo, anchor='nw', tag="openAnnotation")
-        X_COORDINATE+=size[0]
-    canvas.config(scrollregion=(0,0,1200,Y_COORDINATE+300))
-    canvas.tag_bind("openAnnotation", "<1>", image_clicked)
-
+    
     root.mainloop()
 
 #Simplify.
@@ -129,13 +131,12 @@ def getDesiredObjects():
             print "Please enter a valid response. You entered " + tags
     return classes, orientation,tags
 
-
 def main():
     classes, orientation, tags = getDesiredObjects()
     annotationsFileList,annotationsFullPath = createAnnotationsFileList()
     photoFileList,photoFullPath = createPhotoFileList()
     imageDict,root,size = organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,photoFullPath,classes, orientation, tags)
-    createCanvas(imageDict,classes,root,size)
+    createCanvas(imageDict,classes,root,size,orientation, tags)
 
 if __name__ == '__main__':
     main()

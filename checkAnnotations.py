@@ -9,22 +9,37 @@ import matplotlib.pyplot as plt
 from Tkinter import *
 from PIL import Image, ImageTk
 from sets import Set
-import collections
 
-# Accept inputs for certain types of photos
-# Returns photos.
-# Opens all the photos in a reasonable manner
-# Allow changing the brightness of photos.
-# Add in failsafes.
-# think about using descendants.
-# 2 Tkinter.
+# CONSTANTS
 
-def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,photoFullPath, classes, orientation, tags):
+CANVAS_HEIGHT = 750
+CANVAS_WIDTH = 1200
+Y_WHITE_SPACE_OFFSET = 30
+Y_TEXT_OFFSET = 10
+
+def parseXML(soup):
+    nameTagList = re.findall('(<name>)(\w+)(</name>)', str(soup))
+    truncationTagList = re.findall('(<truncated>)(\d)(</truncated>)',str(soup))
+    occludedTagList = re.findall('(<occluded>)(\d)(</occluded>)',str(soup))
+    poseTagList = re.findall('(<pose>)(\w+)(</pose>)',str(soup))
+    xminTagList = re.findall('(<xmin>)(\d+)(</xmin>)',str(soup))
+    yminTagList = re.findall('(<ymin>)(\d+)(</ymin>)',str(soup))
+    xmaxTagList = re.findall('(<xmax>)(\d+)(</xmax>)',str(soup))
+    ymaxTagList = re.findall('(<ymax>)(\d+)(</ymax>)',str(soup))
+    return nameTagList,truncationTagList,occludedTagList,poseTagList,xminTagList,yminTagList,xmaxTagList, ymaxTagList
+
+def determinePhotoSize(classes,orientation):
     if classes.lower() == 'person':
         size = 150, 300
+    elif classes.lower() in ('car', 'bicycle') and orientation.lower() in ('frontal','rear'):
+        size = 200, 150
     else:
         size = 300, 150
-    imageDict = collections.OrderedDict()
+    return size
+
+def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,photoFullPath, classes, orientation, tags):
+    size = determinePhotoSize(classes,orientation)
+    imageDict = {}
     root = Tk()
 
     annotationsSet = Set(annotationsFileList)
@@ -37,21 +52,13 @@ def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,phot
                 f = open(xmlPath)
                 soup = bsoup(f)
                 f.close()
-                nameTagList = re.findall('(<name>)(\w+)(</name>)', str(soup))
-                truncationTagList = re.findall('(<truncated>)(\d)(</truncated>)',str(soup))
-                occludedTagList = re.findall('(<occluded>)(\d)(</occluded>)',str(soup))
-                poseTagList = re.findall('(<pose>)(\w+)(</pose>)',str(soup))
-                xminTagList = re.findall('(<xmin>)(\d+)(</xmin>)',str(soup))
-                yminTagList = re.findall('(<ymin>)(\d+)(</ymin>)',str(soup))
-                xmaxTagList = re.findall('(<xmax>)(\d+)(</xmax>)',str(soup))
-                ymaxTagList = re.findall('(<ymax>)(\d+)(</ymax>)',str(soup))
-                for name,truncation,occluded,pose,xmin,ymin,xmax,ymax in zip(nameTagList,truncationTagList,occludedTagList,poseTagList,
-                    xminTagList,yminTagList,xmaxTagList,ymaxTagList):
+                nameTagList,truncationTagList,occludedTagList,poseTagList,xminTagList,yminTagList,xmaxTagList,ymaxTagList = parseXML(soup)
+                for name,truncation,occluded,pose,xmin,ymin,xmax,ymax in zip(nameTagList,truncationTagList,occludedTagList,poseTagList,xminTagList,yminTagList,xmaxTagList,ymaxTagList):
                     print "Processing file: " + xml
                     if classes.lower() == name[1]:
                         if orientation.lower() in (pose[1].lower(),'all'):
                             if tags.lower() == 'none' and int(truncation[1]) == 0 and int(occluded[1]) == 0 or tags.lower() == 'occluded' and int(occluded[1]) or tags.lower() == 'truncated' and int(truncation[1]) or tags.lower() == 'occluded and truncated' and int(occluded[1]) and int(truncation[1]):
-                                print "Processing file: " + photo
+                                print "Match found in: " + photo
                                 photoPath = os.path.join(photoFullPath, photo)
                                 image = Image.open(photoPath)
                                 image = image.crop((int(xmin[1]),int(ymin[1]),int(xmax[1]),int(ymax[1])))
@@ -60,35 +67,32 @@ def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,phot
                                 imageDict[image] = xml
     return imageDict,root,size
 
-def createCanvas(imageDict,classes,root,size,orientation, tags):
-    print "Creating Canvas."
-    X_COORDINATE = 0
-    X_INCREMENT = 0
-    Y_COORDINATE = 0
-    Y_INCREMENT = 0
-    positionDict = {}
-    
-    frame=Frame(root, height=300, width=150)
-    frame.grid(row=0,column=0)
-    canvas=Canvas(frame,width=1200,height=750)
-
-    positionDict = {}
-
-    # could another function. determine increment.
-    for photo in imageDict:
-        if X_COORDINATE >= 1200:
-            X_COORDINATE = 0
-            Y_COORDINATE += (size[1] + 30)
-        canvas.create_image(X_COORDINATE, Y_COORDINATE, image=photo, anchor='nw')
-        canvas.create_text(X_COORDINATE + size[0]/2, Y_COORDINATE + size[1] + 10,text=imageDict[photo],justify=RIGHT)
-        X_COORDINATE+=size[0]
-        positionDict[imageDict[photo]] = (X_COORDINATE,Y_COORDINATE+size[1])
-    canvas.config(scrollregion=(0,0,1200,Y_COORDINATE+size[1]+ 30))
-
-    title = 'Showing ' + str(en(positionDict)) + ' ' + classes + ' objects' + ' in orientation: ' + orientation
+def determineTitle(positionDict,classes,tags,orientation):
+    title = 'Showing ' + str(len(positionDict)) + ' ' + classes + ' objects' + ' in orientation: ' + orientation
     if tags != 'none':
         title += ' with in tag: ' + tags
-    root.wm_title(title)
+    return title
+
+def createCanvas(imageDict,classes,root,size,orientation,tags):
+    print "Creating Canvas."
+    xCoordinate = 0
+    yCoordinate = 0
+    positionDict = {}
+    frame=Frame(root, height=300, width=150)
+    frame.grid(row=0,column=0)
+    canvas=Canvas(frame,width=CANVAS_WIDTH,height=CANVAS_HEIGHT)
+    # could another function. determine increment.
+    for photo in imageDict:
+        if xCoordinate >= CANVAS_WIDTH:
+            xCoordinate = 0
+            yCoordinate += (size[1] + Y_WHITE_SPACE_OFFSET)
+        canvas.create_image(xCoordinate, yCoordinate, image=photo, anchor='nw')
+        canvas.create_text(xCoordinate + size[0]/2, yCoordinate + size[1] + Y_TEXT_OFFSET,text=imageDict[photo],justify=RIGHT)
+        xCoordinate += size[0]
+        positionDict[imageDict[photo]] = (xCoordinate,yCoordinate + size[1])
+    canvas.config(scrollregion=(0,0,CANVAS_WIDTH,yCoordinate + size[1]+ Y_WHITE_SPACE_OFFSET))
+
+    root.wm_title(determineTitle(positionDict,classes,tags,orientation))
 
     vbar=Scrollbar(frame,orient=VERTICAL)
     vbar.pack(side=RIGHT,fill=Y)
@@ -98,19 +102,15 @@ def createCanvas(imageDict,classes,root,size,orientation, tags):
     
     root.mainloop()
 
-#Simplify.
-def createAnnotationsFileList():
+def acceptUserInput():
+    classes, orientation, tags = getCategoriesInfo()
     annotationsPath = raw_input("Path to the annotations?: ")
     annotationsFullPath = os.path.abspath(annotationsPath)
-    return os.listdir(annotationsFullPath),annotationsFullPath
-
-def createPhotoFileList():
     photoPath = raw_input("Path to the photos in png format?: ")
     photoFullPath = os.path.abspath(photoPath)
-    return os.listdir(photoFullPath),photoFullPath
+    return classes, orientation, tags, os.listdir(annotationsFullPath),annotationsFullPath,os.listdir(photoFullPath),photoFullPath
 
-# Reduce redundancy.
-def getDesiredObjects():
+def getCategoriesInfo():
     while(1):
         classes = raw_input("Which class? (car/person/bicycle): ")
         if classes.lower() in ('car','person','bicycle'):
@@ -129,14 +129,12 @@ def getDesiredObjects():
             break
         else:
             print "Please enter a valid response. You entered " + tags
-    return classes, orientation,tags
+    return classes, orientation, tags
 
 def main():
-    classes, orientation, tags = getDesiredObjects()
-    annotationsFileList,annotationsFullPath = createAnnotationsFileList()
-    photoFileList,photoFullPath = createPhotoFileList()
+    classes, orientation, tags,annotationsFileList,annotationsFullPath,photoFileList,photoFullPath = acceptUserInput()
     imageDict,root,size = organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,photoFullPath,classes, orientation, tags)
-    createCanvas(imageDict,classes,root,size,orientation, tags)
+    createCanvas(imageDict,classes,root,size,orientation,tags)
 
 if __name__ == '__main__':
     main()

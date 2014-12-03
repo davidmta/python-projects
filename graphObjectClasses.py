@@ -70,7 +70,8 @@ def parseFiles(annotationsPath):
 """
 
 def organizeObjectList(dataCheck,objectList=[]):
-    if dataCheck is 'n':
+    if dataCheck == 'n':
+        countedObjects = [0,0,0]
         for objectType in objectList:
             if objectType == 'car':
                 countedObjects[0] += 1
@@ -78,7 +79,6 @@ def organizeObjectList(dataCheck,objectList=[]):
                 countedObjects[1] += 1
             if objectType == 'bicycle':
                 countedObjects[2] += 1
-        print countedObjects
     else:
         f = open('graphObjectClassesData.txt','r')
         carMatch = re.search('(Cars=)(\d+)',f.readline())

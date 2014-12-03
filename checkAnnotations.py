@@ -57,7 +57,7 @@ def organizeImageInfo(annotationsFileList,photoFileList,annotationsFullPath,phot
                     print "Processing file: " + xml
                     if classes.lower() == name[1]:
                         if orientation.lower() in (pose[1].lower(),'all'):
-                            if tags.lower() == 'none' and int(truncation[1]) == 0 and int(occluded[1]) == 0 or tags.lower() == 'occluded' and int(occluded[1]) or tags.lower() == 'truncated' and int(truncation[1]) or tags.lower() == 'occluded and truncated' and int(occluded[1]) and int(truncation[1]):
+                            if tags.lower() == 'all' or tags.lower() == 'none' and int(truncation[1]) == 0 and int(occluded[1]) == 0 or tags.lower() == 'occluded' and int(occluded[1]) or tags.lower() == 'truncated' and int(truncation[1]) or tags.lower() == 'occluded and truncated' and int(occluded[1]) and int(truncation[1]):
                                 print "Match found in: " + photo
                                 photoPath = os.path.join(photoFullPath, photo)
                                 image = Image.open(photoPath)
@@ -118,14 +118,14 @@ def getCategoriesInfo():
         else:
             print "Please enter a valid response. You entered " + classes
     while(1):
-        orientation = raw_input("Which orientation? (left/right/frontal/rear/all): ")
-        if orientation.lower() in ('left','right','frontal','rear','all'):
+        orientation = raw_input("Which orientation? (left/right/frontal/rear/unspecified/all): ")
+        if orientation.lower() in ('left','right','frontal','rear','all','unspecified'):
             break
         else:
             print "Please enter a valid response. You entered " + orientation
     while(1):
-        tags = raw_input("Which tag? (none/occluded/truncated/occluded and truncated): ")
-        if tags.lower() in ('none','occluded','truncated','occluded and truncated'):
+        tags = raw_input("Which tag? (all/none/occluded/truncated/occluded and truncated): ")
+        if tags.lower() in ('all','none','occluded','truncated','occluded and truncated'):
             break
         else:
             print "Please enter a valid response. You entered " + tags

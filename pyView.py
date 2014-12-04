@@ -30,44 +30,69 @@ def parseFiles():
                             jpegList.append(photo)
     return jpegList
 
+# Option to quit
+
 def viewPhotos(jpegList):
-    for jpeg in jpegList:
-#        class App():
-#            def __init__(self):
-#            self.root = Tkinter.Tk()
-#            button = Tkinter.Button(self.root, text = 'root quit', command = self.quit)
-#            button.pack()
-#            self.root.mainloop()
-#            def quit(self):
-#                self.root.destroy()
-#        app = App()
-
-        root = Tk(className=jpeg)
+    for jpegPosition in range(0,len(jpegList)):
         
-        def rightKeyPress(event):
-            print "het"
-        def quit(self):
-            self.root.destroy()
+        root = Tk(className=jpegList[jpegPosition])
         root.geometry('+0+0')
-        
-        image = Image.open(jpeg)
-
+        image = Image.open(jpegList[jpegPosition])
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
-
-
         size = screen_width/2, screen_height/2
         image = ImageOps.fit(image, size, Image.ANTIALIAS)
-
         canvas = Canvas(root,width=image.size[0],height=image.size[1], bd=0, highlightthickness=0)
+        def rightKeyPress(event):
+            root.destroy()
+        
         root.bind("<Right>", rightKeyPress)
-
         canvas.pack()
+
 
         imageTk = ImageTk.PhotoImage(image)
         imagesprite = canvas.create_image(0,0,image=imageTk,anchor='nw')
+                
+
+        
         root.mainloop()
 
+
+#        class Window():
+#            def __init__(self):
+#                self.root = Tk(className=jpegList[jpegPosition])
+#
+#                
+#                self.root.geometry('+0+0')
+#                image = Image.open(jpegList[jpegPosition])
+#                screen_width = self.root.winfo_screenwidth()
+#                screen_height = self.root.winfo_screenheight()
+#                size = screen_width/2, screen_height/2
+#                image = ImageOps.fit(image, size, Image.ANTIALIAS)
+#                canvas = Canvas(self.root,width=image.size[0],height=image.size[1], bd=0, highlightthickness=0)
+#                canvas.pack()
+#                
+#                imageTk = ImageTk.PhotoImage(image)
+#                imagesprite = canvas.create_image(0,0,image=imageTk,anchor='nw')
+#                
+#                def escapeKeyPress(self):
+#                    quit(self)
+#                self.root.bind("<Escape>", escapeKeyPress)
+#                def rightKeyPress(self):
+#                    print "right"
+#                    root.destroy()
+#
+#                self.root.bind("<Right>", rightKeyPress)
+#                def leftKeyPress(self):
+#                    quit(self)
+#                self.root.bind("<Left>", leftKeyPress)
+#                self.root.mainloop()
+#            
+#            def quit(self):
+#                self.destroy()
+#        window = Window()
+
+#/Users/davidta/Desktop
 
 def main():
     jpegList = parseFiles();
